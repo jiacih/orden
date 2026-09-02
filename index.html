@@ -10,7 +10,7 @@
 
     /* 密碼鎖畫面 */
     #lock-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #2c3e50; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: white; }
-    #lock-screen input { font-size: 24px; padding: 10px; text-align: center; width: 220px; margin: 15px 0; border-radius: 8px; border: none; }
+    #lock-screen input { font-size: 24px; padding: 10px; text-align: center; width: 200px; margin: 15px 0; border-radius: 8px; border: none; }
     #lock-screen button { font-size: 20px; padding: 10px 30px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
     /* 頂部導覽列 */
@@ -19,360 +19,283 @@
     .nav-btn.active { background: #e74c3c; }
 
     .page { display: none; padding: 15px; }
-    .page.active { display: flex; }
+    .page.active { display: block; }
 
-    /* POS 點餐版面 */
-    #pos-page { flex-direction: row; gap: 15px; height: calc(100vh - 55px); }
-    .menu-section { flex: 6.5; overflow-y: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .cart-section { flex: 3.5; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+    /* 櫃台點餐頁面 */
+    .pos-container { display: flex; gap: 15px; }
+    .menu-section { flex: 2; }
+    .cart-section { flex: 1; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 15px; height: calc(100vh - 100px); overflow-y: auto; }
 
-    .category-title { font-size: 22px; font-weight: bold; margin: 15px 0 10px 0; color: #d35400; border-bottom: 2px solid #e67e22; padding-bottom: 4px; }
-    .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 10px; }
+    .category-title { font-size: 20px; font-weight: bold; margin: 15px 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #ddd; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
     
-    /* 按鈕字體加大與基礎樣式 */
-    .item-btn { padding: 12px 6px; font-size: 18px; font-weight: bold; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; color: #2c3e50; cursor: pointer; text-align: center; line-height: 1.25; min-height: 75px; display: flex; flex-direction: column; justify-content: center; align-items: center; word-break: break-all; }
-    .item-btn:active { transform: scale(0.96); }
-    .item-price { font-size: 15px; margin-top: 4px; font-weight: normal; opacity: 0.9; }
+    .item-btn { padding: 12px 5px; font-size: 16px; font-weight: bold; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center; word-break: break-all; white-space: pre-line; min-height: 60px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; }
+    .item-btn.meat { background-color: #ffdddd; border-color: #ff9999; color: #990000; }
+    .item-btn.veg { background-color: #ddffdd; border-color: #99ff99; color: #006600; }
 
-    /* 特別色彩標示 */
-    .item-btn.meat-item { background-color: #e74c3c !important; color: #ffffff !important; border-color: #c0392b !important; }
-    .item-btn.veg-item { background-color: #27ae60 !important; color: #ffffff !important; border-color: #219653 !important; }
+    .cart-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .cart-table th, .cart-table td { text-align: left; padding: 8px 4px; border-bottom: 1px solid #eee; }
+    .cart-total { font-size: 22px; font-weight: bold; color: #e74c3c; margin: 15px 0; text-align: right; }
+    .pack-fee { color: #e67e22; font-size: 14px; font-weight: normal; }
+    .submit-btn { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; font-size: 20px; font-weight: bold; border-radius: 8px; cursor: pointer; }
 
-    /* 清單與客製化按鈕 */
-    .cart-list { flex: 1; overflow-y: auto; border-bottom: 1px solid #eee; margin-bottom: 10px; }
-    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 17px; }
-    .qty-btn { width: 32px; height: 32px; font-size: 18px; font-weight: bold; border-radius: 50%; border: 1px solid #ccc; background: #eee; cursor: pointer; margin: 0 4px; }
+    /* 廚房顯示頁面 */
+    .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+    .kds-card { background: white; border-radius: 8px; border-top: 6px solid #3498db; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .kds-card.urgent { border-top-color: #e74c3c; }
+    .kds-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    .kds-item { font-size: 18px; font-weight: bold; margin: 5px 0; white-space: pre-line; }
+    .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 5px; }
+    .complete-btn { width: 100%; margin-top: 15px; padding: 10px; background: #34495e; color: white; border: none; font-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-    .option-group { margin: 8px 0; }
-    .option-title { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
-    .option-btns { display: flex; gap: 5px; flex-wrap: wrap; }
-    .opt-btn { padding: 6px 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 5px; background: #fff; cursor: pointer; }
-    .opt-btn.selected { background: #e67e22; color: white; border-color: #d35400; font-weight: bold; }
-
-    .summary-box { background: #fcfcfc; padding: 10px; border: 1px solid #eaeded; border-radius: 6px; margin: 8px 0; }
-    .submit-btn { width: 100%; padding: 16px; font-size: 22px; font-weight: bold; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; }
-
-    /* KDS 廚房顯示頁面 */
-    #kds-page { flex-direction: column; height: calc(100vh - 55px); width: 100%; }
-    .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; overflow-y: auto; }
-    .order-card { background: white; border: 2px solid #2c3e50; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
-    .order-header { display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; border-bottom: 2px solid #34495e; padding-bottom: 6px; }
-    .container-tag { font-size: 18px; font-weight: bold; color: #c0392b; background: #fadbd8; padding: 4px 8px; border-radius: 4px; margin: 8px 0; }
-    .kds-items { font-size: 19px; line-height: 1.6; margin: 10px 0; flex: 1; }
-    .finish-btn { width: 100%; padding: 14px; font-size: 20px; font-weight: bold; background: #2980b9; color: white; border: none; border-radius: 6px; cursor: pointer; }
-
-    /* 報表頁面 */
-    #report-page { flex-direction: column; gap: 15px; width: 100%; }
-    .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .stat-title { font-size: 16px; color: #7f8c8d; }
-    .stat-value { font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px; }
+    /* 統計頁面 */
+    .stat-card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
 
-  <!-- 密碼鎖遮罩 -->
+  <!-- 密碼鎖控制頁 -->
   <div id="lock-screen">
-    <h2>🔒 呷百二點餐系統驗證</h2>
-    <input type="password" id="pass-input" placeholder="請輸入密碼" />
-    <button onclick="checkPassword()">登入系統</button>
+    <h2>呷百二 POS 系統</h2>
+    <input type="password" id="pass-input" placeholder="請輸入密碼">
+    <button onclick="checkPass()">登入</button>
   </div>
 
-  <!-- 頁面導覽列 -->
+  <!-- 導覽列 -->
   <div class="nav-bar">
-    <button class="nav-btn active" onclick="switchPage('pos', this)">📱 櫃台點餐 (媽媽)</button>
-    <button class="nav-btn" onclick="switchPage('kds', this)">🖥️ 廚房顯示 (爸爸)</button>
-    <button class="nav-btn" onclick="switchPage('report', this)">📊 營業額統計</button>
+    <button class="nav-btn active" onclick="switchPage('pos')">📱 櫃台點餐</button>
+    <button class="nav-btn" onclick="switchPage('kds')">🖥️ 廚房顯示</button>
+    <button class="nav-btn" onclick="switchPage('stats')">📊 銷售統計</button>
   </div>
 
-  <!-- 1. 點餐頁面 -->
-  <div id="pos-page" class="page active">
-    <div class="menu-section">
-      <div class="category-title">鮮品 / 火鍋料 / 肉類</div>
-      <div class="item-grid" id="menu-fresh"></div>
-
-      <div class="category-title">蔬菜類</div>
-      <div class="item-grid" id="menu-veg"></div>
-
-      <div class="category-title">麵類 / 主食</div>
-      <div class="item-grid" id="menu-noodle"></div>
-    </div>
-
-    <div class="cart-section">
-      <h3 style="margin: 0 0 10px 0;">目前點餐明細</h3>
-      <div class="cart-list" id="cart-list"></div>
-
-      <div class="option-group">
-        <div class="option-title">湯乾：</div>
-        <div class="option-btns">
-          <button class="opt-btn selected" onclick="setOpt('soup','乾的',this)">乾的</button>
-          <button class="opt-btn" onclick="setOpt('soup','湯的',this)">湯的</button>
+  <!-- 頁面 1：櫃台點餐 -->
+  <div id="page-pos" class="page active">
+    <div class="pos-container">
+      <div class="menu-section" id="menu-container"></div>
+      <div class="cart-section">
+        <h3>目前點餐明細</h3>
+        <table class="cart-table">
+          <thead>
+            <tr><th>品項</th><th>數量</th><th>小計</th><th></th></tr>
+          </thead>
+          <tbody id="cart-items"></tbody>
+        </table>
+        <div class="cart-total">
+          <div id="pack-fee-text" class="pack-fee"></div>
+          總金額: $<span id="total-amount">0</span>
         </div>
+        <button class="submit-btn" onclick="submitOrder()">送出訂單</button>
       </div>
-
-      <div class="option-group">
-        <div class="option-title">辣度：</div>
-        <div class="option-btns">
-          <button class="opt-btn selected" onclick="setOpt('spicy','不辣',this)">不辣</button>
-          <button class="opt-btn" onclick="setOpt('spicy','微辣',this)">微辣</button>
-          <button class="opt-btn" onclick="setOpt('spicy','辣',this)">辣</button>
-        </div>
-      </div>
-
-      <div class="summary-box">
-        <div>餐點小計：$<span id="subtotal">0</span></div>
-        <div>包材費：$<span id="packaging-fee">0</span> <small id="pack-tip" style="color:red;"></small></div>
-        <div style="font-size: 16px; font-weight: bold; color: #c0392b; margin-top: 4px;">盛裝容器：<span id="container-type">袋裝</span></div>
-        <hr style="margin: 6px 0;">
-        <div style="font-size: 22px; font-weight: bold; color: #27ae60;">應收總計：$<span id="total">0</span> 元</div>
-      </div>
-
-      <button class="submit-btn" onclick="submitOrder()">送出訂單 ➔</button>
     </div>
   </div>
 
-  <!-- 2. 廚房顯示頁面 -->
-  <div id="kds-page" class="page">
-    <div class="kds-grid" id="kds-grid"></div>
+  <!-- 頁面 2：廚房顯示 (KDS) -->
+  <div id="page-kds" class="page">
+    <div class="kds-grid" id="kds-container"></div>
   </div>
 
-  <!-- 3. 統計頁面 -->
-  <div id="report-page" class="page">
+  <!-- 頁面 3：銷售統計 -->
+  <div id="page-stats" class="page">
     <div class="stat-card">
-      <div class="stat-title">今日總營業額</div>
-      <div class="stat-value" id="today-revenue">$ 0 元</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">今日完成訂單數</div>
-      <div class="stat-value" id="today-orders">0 單</div>
+      <h3>今日營業摘要</h3>
+      <p>總訂單數：<strong id="stat-count">0</strong> 筆</p>
+      <p>總營業額：$<strong id="stat-revenue">0</strong> 元</p>
     </div>
   </div>
 
-  <script>
-    const SYSTEM_PASS = "1234";
+  <!-- 導入 Firebase SDK (版本 10.x) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 肉類判定清單
-    const meatNames = ["牛肉片", "豬肉片", "羊肉片", "雞肉片", "嘴邊肉", "大腸", "豬頭皮", "豬耳朵", "豬腳筋", "德式香腸", "雞肝"];
-
-    // 完整 96 項菜單資料
-    const menuData = {
-      fresh: [
-        { name: "鳥蛋", price: 20 }, { name: "豬血糕", price: 20 }, { name: "芋簽條", price: 10 },
-        { name: "麻糬燒(花生)", price: 25 }, { name: "麻糬燒(芝麻)", price: 25 }, { name: "麻糬燒(起司)", price: 25 },
-        { name: "甜不辣", price: 25 }, { name: "龍蝦條", price: 20 }, { name: "蛋餃", price: 25 },
-        { name: "魚餃", price: 20 }, { name: "燕餃", price: 20 }, { name: "黃金蛋", price: 20 },
-        { name: "魚卵捲", price: 20 }, { name: "竹輪", price: 20 }, { name: "貢丸", price: 25 },
-        { name: "蝦球", price: 20 }, { name: "蟹肉棒", price: 20 }, { name: "百頁豆腐", price: 20 },
-        { name: "九層花枝", price: 20 }, { name: "鑫鑫腸", price: 20 }, { name: "豬皮", price: 20 },
-        { name: "鴨肉丸", price: 20 }, { name: "鴨血", price: 25 }, { name: "水晶餃", price: 30 },
-        { name: "鱈魚片板", price: 30 }, { name: "花干", price: 25 }, { name: "大豆皮", price: 30 },
-        { name: "小豆皮", price: 30 }, { name: "大黑豆干", price: 30 }, { name: "蒟蒻片", price: 20 },
-        { name: "炸豆包", price: 20 }, { name: "鱈魚丸", price: 20 }, { name: "蛋白", price: 25 },
-        { name: "芋粿巧", price: 25 }, { name: "花枝丸", price: 35 }, { name: "魚豆腐", price: 35 },
-        { name: "原味貢丸", price: 35 }, { name: "德式香腸", price: 35 }, { name: "起司魚豆腐", price: 35 },
-        { name: "香菇貢丸", price: 35 }, { name: "鮮魷魚", price: 40 }, { name: "高麗菜捲", price: 45 },
-        { name: "花枝片", price: 35 }, { name: "豬腳筋", price: 40 }, { name: "豬頭皮", price: 40 },
-        { name: "牛肉片", price: 40 }, { name: "豬肉片", price: 40 }, { name: "羊肉片", price: 40 },
-        { name: "雞肉片", price: 40 }, { name: "豬耳朵", price: 40 }, { name: "嘴邊肉", price: 50 },
-        { name: "大腸", price: 50 }, { name: "白蘿蔔", price: 10 }, { name: "紅蘿蔔", price: 10 },
-        { name: "嫩油豆腐", price: 10 }, { name: "黑輪", price: 15 }, { name: "雞肝", price: 10 },
-        { name: "素腰花", price: 20 }, { name: "凍豆腐", price: 10 }, { name: "三角豆腐", price: 10 },
-        { name: "海帶", price: 10 }, { name: "龍蝦沙拉", price: 25 }, { name: "魚蛋包", price: 25 },
-        { name: "小魚片板", price: 10 }, { name: "起司燒", price: 25 }
-      ],
-      veg: [
-        { name: "豆芽菜", price: 15 }, { name: "木耳", price: 20 }, { name: "金針菇", price: 30 },
-        { name: "高麗菜", price: 30 }, { name: "花椰菜", price: 30 }, { name: "大陸妹", price: 30 },
-        { name: "A菜", price: 30 }, { name: "地瓜葉", price: 30 }, { name: "空心菜", price: 30 },
-        { name: "娃娃菜", price: 30 }, { name: "青江菜", price: 30 }, { name: "菠菜(冬季)", price: 30 },
-        { name: "香菇", price: 30 }, { name: "杏鮑菇", price: 30 }, { name: "秀珍菇", price: 30 },
-        { name: "四季豆", price: 30 }, { name: "玉米筍", price: 30 }, { name: "水蓮", price: 30 },
-        { name: "蒟蒻絲(盒)", price: 40 }
-      ],
-      noodle: [
-        { name: "王子麵", price: 15 }, { name: "細冬粉", price: 20 }, { name: "年糕", price: 20 },
-        { name: "鍋燒意麵", price: 20 }, { name: "媽媽拉麵", price: 25 }, { name: "麵疙瘩", price: 25 },
-        { name: "粄條", price: 25 }, { name: "寬粉", price: 25 }, { name: "蒸煮麵", price: 25 },
-        { name: "刀削麵", price: 35 }, { name: "烏龍麵", price: 30 }, { name: "韓國麵", price: 40 }
-      ]
+    // 您的 Firebase 認證金鑰
+    const firebaseConfig = {
+      apiKey: "AIzaSyDk-WPutNSdzZzPktNnOR1s7OuOSEi5caA",
+      authDomain: "orden-pos.firebaseapp.com",
+      databaseURL: "https://orden-pos-default-rtdb.firebaseio.com",
+      projectId: "orden-pos",
+      storageBucket: "orden-pos.firebasestorage.app",
+      messagingSenderId: "1037991430701",
+      appId: "1:1037991430701:web:5ae2b89c461047f12e86a4",
+      measurementId: "G-GT7YTFEJD8"
     };
 
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const ordersRef = ref(db, 'orders');
+
+    // 菜單資料
+    const menuData = [
+      { category: "肉類", type: "meat", items: [ { name: "豬肉片", price: 35 }, { name: "牛肉片", price: 40 }, { name: "雞胸肉", price: 35 } ] },
+      { category: "蔬菜類", type: "veg", items: [ { name: "高麗菜", price: 25 }, { name: "空心菜", price: 25 }, { name: "金針菇", price: 20 } ] },
+      { category: "火鍋料 / 特殊", type: "normal", items: [ { name: "麻糬燒\n(口味)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 } ] }
+    ];
+
     let cart = [];
-    let orderOptions = { soup: '乾的', spicy: '不辣' };
-    let orderCount = 1;
-    let ordersList = [];
-    let todayRevenue = 0;
-    let completedOrdersCount = 0;
 
-    // 格式化名稱：若含括號從括號處換行，其餘超過 4 字換行
-    function formatName(name) {
-      if (name.includes('(') && name.includes(')')) {
-        const index = name.indexOf('(');
-        return name.slice(0, index) + '<br>' + name.slice(index);
-      } else if (name.length > 4) {
-        return name.slice(0, 4) + '<br>' + name.slice(4);
-      }
-      return name;
-    }
-
-    function checkPassword() {
-      const input = document.getElementById('pass-input').value;
-      if (input === SYSTEM_PASS) {
+    // 密碼檢查
+    window.checkPass = function() {
+      const pass = document.getElementById('pass-input').value;
+      if (pass === '1234') {
         document.getElementById('lock-screen').style.display = 'none';
-        localStorage.setItem('auth_pass', 'true');
       } else {
-        alert("密碼錯誤！");
+        alert('密碼錯誤！');
       }
-    }
+    };
 
-    if (localStorage.getItem('auth_pass') === 'true') {
-      document.getElementById('lock-screen').style.display = 'none';
-    }
+    // 頁面切換
+    window.switchPage = function(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`page-${pageId}`).classList.add('active');
+      event.target.classList.add('active');
+    };
 
+    // 渲染菜單
     function initMenu() {
-      renderCategory(menuData.fresh, 'menu-fresh', false);
-      renderCategory(menuData.veg, 'menu-veg', true);
-      renderCategory(menuData.noodle, 'menu-noodle', false);
+      const container = document.getElementById('menu-container');
+      container.innerHTML = '';
+      menuData.forEach(cat => {
+        const title = document.createElement('div');
+        title.className = 'category-title';
+        title.innerText = cat.category;
+        container.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        cat.items.forEach(item => {
+          const btn = document.createElement('button');
+          btn.className = `item-btn ${cat.type}`;
+          btn.innerText = `${item.name}\n$${item.price}`;
+          btn.onclick = () => addToCart(item);
+          grid.appendChild(btn);
+        });
+        container.appendChild(grid);
+      });
     }
 
-    function renderCategory(items, elementId, isVegCategory) {
-      const container = document.getElementById(elementId);
-      container.innerHTML = items.map(item => {
-        let extraClass = "";
-        if (isVegCategory) {
-          extraClass = "veg-item";
-        } else if (meatNames.includes(item.name)) {
-          extraClass = "meat-item";
-        }
-        
-        const displayName = formatName(item.name);
-
-        return `
-          <div class="item-btn ${extraClass}" onclick="addToCart('${item.name}', ${item.price})">
-            <div>${displayName}</div>
-            <div class="item-price">$${item.price}</div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function addToCart(name, price) {
-      const existing = cart.find(i => i.name === name);
+    // 加入購物車
+    function addToCart(item) {
+      const existing = cart.find(c => c.name === item.name);
       if (existing) {
         existing.qty++;
       } else {
-        cart.push({ name, price, qty: 1 });
+        cart.push({ ...item, qty: 1 });
       }
-      updateCart();
+      renderCart();
     }
 
-    function changeQty(name, delta) {
-      const item = cart.find(i => i.name === name);
-      if (item) {
-        item.qty += delta;
-        if (item.qty <= 0) {
-          cart = cart.filter(i => i.name !== name);
-        }
-      }
-      updateCart();
-    }
+    // 渲染購物車與費用計算
+    function renderCart() {
+      const tbody = document.getElementById('cart-items');
+      tbody.innerHTML = '';
+      let subtotal = 0;
 
-    function updateCart() {
-      const cartContainer = document.getElementById('cart-list');
-      cartContainer.innerHTML = cart.map(item => `
-        <div class="cart-item">
-          <div><strong>${item.name}</strong> ($${item.price})</div>
-          <div>
-            <button class="qty-btn" onclick="changeQty('${item.name}', -1)">-</button>
-            <span>${item.qty}</span>
-            <button class="qty-btn" onclick="changeQty('${item.name}', 1)">+</button>
-          </div>
-        </div>
-      `).join('');
+      cart.forEach((item, index) => {
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
+        tbody.innerHTML += `
+          <tr>
+            <td>${item.name.replace('\n', ' ')}</td>
+            <td>
+              <button onclick="changeQty(${index}, -1)">-</button>
+              ${item.qty}
+              <button onclick="changeQty(${index}, 1)">+</button>
+            </td>
+            <td>$${itemTotal}</td>
+            <td><button onclick="removeItem(${index})">✕</button></td>
+          </tr>
+        `;
+      });
 
-      let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-      let packFee = (subtotal > 0 && subtotal < 50) ? 5 : 0;
-      let packTip = packFee > 0 ? "(未滿$50加收包材費)" : "";
-      let containerType = subtotal >= 60 ? "紙碗盛裝" : "袋裝";
+      // 包裝費邏輯：未滿 $50 加收 $2
+      let packFee = (subtotal > 0 && subtotal < 50) ? 2 : 0;
       let total = subtotal + packFee;
 
-      document.getElementById('subtotal').innerText = subtotal;
-      document.getElementById('packaging-fee').innerText = packFee;
-      document.getElementById('pack-tip').innerText = packTip;
-      document.getElementById('container-type').innerText = containerType;
-      document.getElementById('total').innerText = total;
+      document.getElementById('pack-fee-text').innerText = packFee > 0 ? "（未滿 $50，含包裝費 $2）" : "";
+      document.getElementById('total-amount').innerText = total;
     }
 
-    function setOpt(type, val, btn) {
-      orderOptions[type] = val;
-      btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    }
+    window.changeQty = function(index, delta) {
+      cart[index].qty += delta;
+      if (cart[index].qty <= 0) cart.splice(index, 1);
+      renderCart();
+    };
 
-    function submitOrder() {
-      if (cart.length === 0) {
-        alert("請先點選餐點！");
-        return;
-      }
+    window.removeItem = function(index) {
+      cart.splice(index, 1);
+      renderCart();
+    };
+
+    // 送出訂單至 Firebase 雲端
+    window.submitOrder = function() {
+      if (cart.length === 0) return alert('請先選擇餐點！');
 
       let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-      let packFee = (subtotal > 0 && subtotal < 50) ? 5 : 0;
+      let packFee = (subtotal < 50) ? 2 : 0;
       let total = subtotal + packFee;
-      let containerType = subtotal >= 60 ? "紙碗盛裝" : "袋裝";
+      // 容器規則：滿 $60 使用紙碗，否則使用塑膠袋
+      let containerType = (total >= 60) ? "紙碗" : "塑膠袋";
 
-      const order = {
-        id: orderCount++,
-        time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
-        items: [...cart],
-        options: { ...orderOptions },
+      const orderData = {
+        items: cart,
+        total: total,
         container: containerType,
-        total: total
+        status: "pending",
+        timestamp: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
-      ordersList.push(order);
-      renderKDS();
+      // 寫入 Firebase
+      push(ordersRef, orderData).then(() => {
+        alert('訂單已傳送到廚房！');
+        cart = [];
+        renderCart();
+      }).catch(err => alert('送單失敗：' + err.message));
+    };
 
-      cart = [];
-      updateCart();
-      alert("訂單已發送至廚房！");
-    }
+    // 即時監聽 Firebase 資料庫（A 手機送單，B 手機自動同步更新）
+    onValue(ordersRef, (snapshot) => {
+      const data = snapshot.val();
+      const kdsContainer = document.getElementById('kds-container');
+      kdsContainer.innerHTML = '';
 
-    function renderKDS() {
-      const kdsGrid = document.getElementById('kds-grid');
-      kdsGrid.innerHTML = ordersList.map(order => `
-        <div class="order-card">
-          <div>
-            <div class="order-header">
-              <span>單號：#${order.id}</span>
-              <span>${order.time}</span>
-            </div>
-            <div class="container-tag">【${order.container}】 | ${order.options.soup} / ${order.options.spicy}</div>
-            <div class="kds-items">
-              ${order.items.map(item => `<div>• ${item.name} x ${item.qty}</div>`).join('')}
-            </div>
-          </div>
-          <button class="finish-btn" onclick="finishOrder(${order.id})">✓ 完成出餐 (劃掉)</button>
-        </div>
-      `).join('');
-    }
+      let totalRevenue = 0;
+      let orderCount = 0;
 
-    function finishOrder(id) {
-      const finishedOrder = ordersList.find(o => o.id === id);
-      if (finishedOrder) {
-        todayRevenue += finishedOrder.total;
-        completedOrdersCount++;
-        document.getElementById('today-revenue').innerText = `$ ${todayRevenue} 元`;
-        document.getElementById('today-orders').innerText = `${completedOrdersCount} 單`;
+      if (data) {
+        Object.keys(data).forEach(key => {
+          const order = data[key];
+          totalRevenue += order.total;
+          orderCount++;
+
+          if (order.status === 'pending') {
+            let itemsHtml = order.items.map(i => `<div class="kds-item">• ${i.name.replace('\n', ' ')} x ${i.qty}</div>`).join('');
+            
+            kdsContainer.innerHTML += `
+              <div class="kds-card">
+                <div class="kds-header">
+                  <span>時間：${order.timestamp}</span>
+                  <span>$${order.total}</span>
+                </div>
+                ${itemsHtml}
+                <div class="kds-container-tag">包裝：${order.container}</div>
+                <button class="complete-btn" onclick="completeOrder('${key}')">出餐完成</button>
+              </div>
+            `;
+          }
+        });
       }
-      ordersList = ordersList.filter(o => o.id !== id);
-      renderKDS();
-    }
 
-    function switchPage(pageId, btn) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(pageId + '-page').classList.add('active');
-      btn.classList.add('active');
-    }
+      // 更新統計
+      document.getElementById('stat-count').innerText = orderCount;
+      document.getElementById('stat-revenue').innerText = totalRevenue;
+    });
+
+    // 廚房點擊出餐完成
+    window.completeOrder = function(orderId) {
+      update(ref(db, `orders/${orderId}`), { status: 'completed' });
+    };
 
     initMenu();
   </script>
