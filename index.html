@@ -30,6 +30,9 @@
     .item-btn.meat { background-color: #ffdddd; border-color: #ff9999; color: #990000; }
     .item-btn.veg { background-color: #ddffdd; border-color: #99ff99; color: #006600; }
 
+    .cart-header { display: flex; justify-content: space-between; align-items: center; }
+    .clear-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+
     .cart-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     .cart-table th, .cart-table td { text-align: left; padding: 8px 4px; border-bottom: 1px solid #eee; }
     .cart-total { font-size: 22px; font-weight: bold; color: #e74c3c; margin: 15px 0; text-align: right; }
@@ -41,7 +44,9 @@
     .kds-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     .kds-item { font-size: 18px; font-weight: bold; margin: 5px 0; white-space: pre-line; }
     .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 5px; font-weight: bold; }
-    .complete-btn { width: 100%; margin-top: 15px; padding: 10px; background: #34495e; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .kds-actions { display: flex; gap: 10px; margin-top: 15px; }
+    .complete-btn { flex: 2; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .delete-btn { flex: 1; padding: 10px; background: #c0392b; color: white; border: none; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
     .stat-card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
   </style>
@@ -64,7 +69,10 @@
     <div class="pos-container">
       <div class="menu-section" id="menu-container"></div>
       <div class="cart-section">
-        <h3>目前點餐明細</h3>
+        <div class="cart-header">
+          <h3>目前點餐明細</h3>
+          <button class="clear-btn" id="clear-cart-btn">清空購物車</button>
+        </div>
         <table class="cart-table">
           <thead>
             <tr><th>品項</th><th>數量</th><th>小計</th><th></th></tr>
@@ -94,7 +102,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDk-WPutNSdzZzPktNnOR1s7OuOSEi5caA",
@@ -111,58 +119,72 @@
     const db = getDatabase(app);
     const ordersRef = ref(db, 'orders');
 
-    const menuData = [
+    const rawMenuData = [
       {
         category: "🥩 肉類區",
         type: "meat",
         items: [
-          { name: "豬肉片", price: 35 }, { name: "牛肉片", price: 40 }, { name: "羊肉片", price: 40 },
-          { name: "雞胸肉", price: 35 }, { name: "鴨肉片", price: 40 }, { name: "培根豬", price: 35 },
-          { name: "培根牛", price: 40 }, { name: "豬皮", price: 20 }, { name: "豬耳朵", price: 35 },
-          { name: "豬肝", price: 30 }, { name: "豬心", price: 35 }, { name: "大腸頭", price: 50 },
-          { name: "雞心", price: 25 }, { name: "雞屁股", price: 25 }, { name: "雞胗", price: 25 },
-          { name: "鴨翅", price: 30 }, { name: "鴨舌", price: 40 }, { name: "鳥蛋", price: 20 }
+          { name: "大腸頭", price: 50 }, { name: "牛肉片", price: 40 }, { name: "羊肉片", price: 40 },
+          { name: "鴨肉片", price: 40 }, { name: "培根牛", price: 40 }, { name: "鴨舌", price: 40 },
+          { name: "豬肉片", price: 35 }, { name: "雞胸肉", price: 35 }, { name: "培根豬", price: 35 },
+          { name: "豬耳朵", price: 35 }, { name: "豬心", price: 35 }, { name: "豬肝", price: 30 },
+          { name: "鴨翅", price: 30 }, { name: "雞心", price: 25 }, { name: "雞屁股", price: 25 },
+          { name: "雞胗", price: 25 }, { name: "豬皮", price: 20 }, { name: "鳥蛋", price: 20 }
         ]
       },
       {
         category: "🥬 蔬菜類區",
         type: "veg",
         items: [
-          { name: "高麗菜", price: 25 }, { name: "空心菜", price: 25 }, { name: "大陸妹", price: 25 },
-          { name: "小白菜", price: 25 }, { name: "青花菜", price: 30 }, { name: "水蓮", price: 30 },
-          { name: "金針菇", price: 20 }, { name: "香菇", price: 25 }, { name: "杏鮑菇", price: 25 },
-          { name: "木耳", price: 20 }, { name: "玉米筍", price: 25 }, { name: "蘿蔔", price: 15 },
-          { name: "絲瓜", price: 25 }, { name: "苦瓜", price: 25 }, { name: "四季豆", price: 30 },
-          { name: "蓮藕", price: 30 }, { name: "大芋頭", price: 25 }, { name: "小芋頭", price: 20 }
+          { name: "青花菜", price: 30 }, { name: "水蓮", price: 30 }, { name: "四季豆", price: 30 },
+          { name: "蓮藕", price: 30 }, { name: "高麗菜", price: 25 }, { name: "空心菜", price: 25 },
+          { name: "大陸妹", price: 25 }, { name: "小白菜", price: 25 }, { name: "香菇", price: 25 },
+          { name: "杏鮑菇", price: 25 }, { name: "玉米筍", price: 25 }, { name: "絲瓜", price: 25 },
+          { name: "苦瓜", price: 25 }, { name: "大芋頭", price: 25 }, { name: "金針菇", price: 20 },
+          { name: "木耳", price: 20 }, { name: "小芋頭", price: 20 }, { name: "蘿蔔", price: 15 }
         ]
       },
       {
-        category: "🍢 豆製品 / 火鍋料 / 麵類",
+        category: "🍜 主食 / 麵類區",
         type: "normal",
         items: [
-          { name: "麻糬燒\n(口味)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 },
-          { name: "大豆干", price: 20 }, { name: "小豆干", price: 15 }, { name: "百頁豆腐", price: 20 },
-          { name: "凍豆腐", price: 15 }, { name: "油豆腐", price: 15 }, { name: "豆皮", price: 20 },
-          { name: "蘭花干", price: 20 }, { name: "素雞", price: 15 }, { name: "素腰花", price: 20 },
+          { name: "韓國拉麵", price: 30 }, { name: "烏龍麵", price: 25 }, { name: "蒸煮麵", price: 20 },
+          { name: "意麵", price: 20 }, { name: "雞絲麵", price: 20 }, { name: "寬粉", price: 20 },
+          { name: "王子麵", price: 15 }, { name: "科學麵", price: 15 }, { name: "冬粉", price: 15 }
+        ]
+      },
+      {
+        category: "🍢 豆製品 / 火鍋料區",
+        type: "normal",
+        items: [
+          { name: "苦瓜封肉", price: 35 }, { name: "牛肉丸", price: 30 }, { name: "墨魚丸", price: 30 },
+          { name: "高麗菜捲", price: 30 }, { name: "油豆腐包肉", price: 30 }, { name: "花枝丸", price: 25 },
+          { name: "芋頭丸", price: 25 }, { name: "魚包蛋", price: 25 }, { name: "起司球", price: 25 },
+          { name: "九層塔花枝丸", price: 25 }, { name: "龍蝦沙拉丸", price: 25 }, { name: "麻辣丸", price: 25 },
+          { name: "溏心蛋", price: 25 }, { name: "大豆干", price: 20 }, { name: "百頁豆腐", price: 20 },
+          { name: "豆皮", price: 20 }, { name: "蘭花干", price: 20 }, { name: "素腰花", price: 20 },
           { name: "水晶餃", price: 20 }, { name: "貢丸", price: 20 }, { name: "香菇丸", price: 20 },
-          { name: "花枝丸", price: 25 }, { name: "芋頭丸", price: 25 }, { name: "燕丸", price: 20 },
-          { name: "魚包蛋", price: 25 }, { name: "起司球", price: 25 }, { name: "蟹肉棒", price: 15 },
-          { name: "魚餃", price: 20 }, { name: "蝦餃", price: 20 }, { name: "蛋餃", price: 20 },
-          { name: "竹輪", price: 15 }, { name: "鑫鑫腸", price: 15 }, { name: "米血", price: 15 },
-          { name: "糯米腸", price: 20 }, { name: "蘿蔔糕", price: 20 }, { name: "年糕", price: 20 },
-          { name: "王子麵", price: 15 }, { name: "科學麵", price: 15 }, { name: "蒸煮麵", price: 20 },
-          { name: "意麵", price: 20 }, { name: "雞絲麵", price: 20 }, { name: "烏龍麵", price: 25 },
-          { name: "冬粉", price: 15 }, { name: "寬粉", price: 20 }, { name: "韓國拉麵", price: 30 },
-          { name: "海帶", price: 15 }, { name: "海帶芽", price: 20 }, { name: "蒟蒻條", price: 15 },
-          { name: "蒟蒻絲", price: 15 }, { name: "百頁捲", price: 20 }, { name: "樓梯", price: 15 },
-          { name: "黑輪", price: 15 }, { name: "九層塔花枝丸", price: 25 }, { name: "龍蝦沙拉丸", price: 25 },
-          { name: "麻辣丸", price: 25 }, { name: "牛肉丸", price: 30 }, { name: "墨魚丸", price: 30 },
+          { name: "燕丸", price: 20 }, { name: "魚饺", price: 20 }, { name: "蝦餃", price: 20 },
+          { name: "蛋餃", price: 20 }, { name: "糯米腸", price: 20 }, { name: "蘿蔔糕", price: 20 },
+          { name: "年糕", price: 20 }, { name: "海帶芽", price: 20 }, { name: "百頁捲", price: 20 },
           { name: "魚豆腐", price: 20 }, { name: "魚卵捲", price: 20 }, { name: "花枝捲", price: 20 },
-          { name: "高麗菜捲", price: 30 }, { name: "苦瓜封肉", price: 35 }, { name: "油豆腐包肉", price: 30 },
-          { name: "皮蛋", price: 20 }, { name: "溏心蛋", price: 25 }, { name: "滷蛋", price: 15 }
+          { name: "皮蛋", price: 20 }, { name: "麻糬燒(原味)", price: 20 }, { name: "麻糬燒(花生)", price: 20 },
+          { name: "麻糬燒(芝麻)", price: 20 }, { name: "麻糬燒(起司)", price: 20 }, { name: "麻糬燒(抹茶)", price: 20 },
+          { name: "麻糬燒(黑糖)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 },
+          { name: "小豆干", price: 15 }, { name: "凍豆腐", price: 15 }, { name: "油豆腐", price: 15 },
+          { name: "素雞", price: 15 }, { name: "蟹肉棒", price: 15 }, { name: "竹輪", price: 15 },
+          { name: "鑫鑫腸", price: 15 }, { name: "米血", price: 15 }, { name: "海帶", price: 15 },
+          { name: "蒟蒻條", price: 15 }, { name: "蒟蒻絲", price: 15 }, { name: "樓梯", price: 15 },
+          { name: "黑輪", price: 15 }, { name: "滷蛋", price: 15 }
         ]
       }
     ];
+
+    // 自動依據價格高至低排序
+    const menuData = rawMenuData.map(cat => ({
+      ...cat,
+      items: [...cat.items].sort((a, b) => b.price - a.price)
+    }));
 
     let cart = [];
 
@@ -263,6 +285,13 @@
       renderCart();
     }
 
+    document.getElementById('clear-cart-btn').onclick = function() {
+      if (cart.length > 0 && confirm('確定要清空購物車嗎？')) {
+        cart = [];
+        renderCart();
+      }
+    };
+
     document.getElementById('submit-btn').onclick = function() {
       if (cart.length === 0) return alert('請先選擇餐點！');
 
@@ -312,11 +341,20 @@
               </div>
               ${itemsHtml}
               <div class="kds-container-tag">包裝：${order.container}</div>
-              <button class="complete-btn">出餐完成</button>
+              <div class="kds-actions">
+                <button class="complete-btn">出餐完成</button>
+                <button class="delete-btn">刪除</button>
+              </div>
             `;
 
             card.querySelector('.complete-btn').onclick = function() {
               update(ref(db, `orders/${key}`), { status: 'completed' });
+            };
+
+            card.querySelector('.delete-btn').onclick = function() {
+              if (confirm('確定要刪除這筆訂單嗎？')) {
+                remove(ref(db, `orders/${key}`));
+              }
             };
 
             kdsContainer.appendChild(card);
