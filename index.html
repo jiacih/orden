@@ -8,12 +8,10 @@
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { margin: 0; padding: 0; background-color: #f4f4f9; }
 
-    /* 密碼鎖畫面 */
     #lock-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #2c3e50; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: white; }
     #lock-screen input { font-size: 24px; padding: 10px; text-align: center; width: 200px; margin: 15px 0; border-radius: 8px; border: none; }
     #lock-screen button { font-size: 20px; padding: 10px 30px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-    /* 頂部導覽列 */
     .nav-bar { display: flex; background: #333; color: white; }
     .nav-btn { flex: 1; padding: 15px; text-align: center; font-size: 18px; cursor: pointer; border: none; background: transparent; color: white; font-weight: bold; }
     .nav-btn.active { background: #e74c3c; }
@@ -21,7 +19,6 @@
     .page { display: none; padding: 15px; }
     .page.active { display: block; }
 
-    /* 櫃台點餐頁面 */
     .pos-container { display: flex; gap: 15px; }
     .menu-section { flex: 2; }
     .cart-section { flex: 1; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 15px; height: calc(100vh - 100px); overflow-y: auto; }
@@ -39,7 +36,6 @@
     .pack-fee { color: #e67e22; font-size: 14px; font-weight: normal; }
     .submit-btn { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; font-size: 20px; font-weight: bold; border-radius: 8px; cursor: pointer; }
 
-    /* 廚房顯示頁面 */
     .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
     .kds-card { background: white; border-radius: 8px; border-top: 6px solid #3498db; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .kds-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
@@ -47,27 +43,23 @@
     .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 5px; font-weight: bold; }
     .complete-btn { width: 100%; margin-top: 15px; padding: 10px; background: #34495e; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
-    /* 統計頁面 */
     .stat-card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
 
-  <!-- 密碼鎖畫面 -->
   <div id="lock-screen">
     <h2>呷百二 POS 系統</h2>
     <input type="password" id="pass-input" placeholder="請輸入密碼">
-    <button onclick="checkPass()">登入</button>
+    <button id="login-btn">登入</button>
   </div>
 
-  <!-- 頂部導覽列 -->
   <div class="nav-bar">
-    <button class="nav-btn active" onclick="switchPage('pos')">📱 櫃台點餐</button>
-    <button class="nav-btn" onclick="switchPage('kds')">🖥️ 廚房顯示</button>
-    <button class="nav-btn" onclick="switchPage('stats')">📊 銷售統計</button>
+    <button class="nav-btn active" data-page="pos">📱 櫃台點餐</button>
+    <button class="nav-btn" data-page="kds">🖥️ 廚房顯示</button>
+    <button class="nav-btn" data-page="stats">📊 銷售統計</button>
   </div>
 
-  <!-- 頁面 1：櫃台點餐 -->
   <div id="page-pos" class="page active">
     <div class="pos-container">
       <div class="menu-section" id="menu-container"></div>
@@ -83,17 +75,15 @@
           <div id="pack-fee-text" class="pack-fee"></div>
           總金額: $<span id="total-amount">0</span>
         </div>
-        <button class="submit-btn" onclick="submitOrder()">送出訂單</button>
+        <button class="submit-btn" id="submit-btn">送出訂單</button>
       </div>
     </div>
   </div>
 
-  <!-- 頁面 2：廚房顯示 (KDS) -->
   <div id="page-kds" class="page">
     <div class="kds-grid" id="kds-container"></div>
   </div>
 
-  <!-- 頁面 3：銷售統計 -->
   <div id="page-stats" class="page">
     <div class="stat-card">
       <h3>今日營業摘要</h3>
@@ -102,7 +92,6 @@
     </div>
   </div>
 
-  <!-- 導入 Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
@@ -122,10 +111,9 @@
     const db = getDatabase(app);
     const ordersRef = ref(db, 'orders');
 
-    // 完整 96 項菜單資料
     const menuData = [
       {
-        category: "🥩 肉類區 (紅底)",
+        category: "🥩 肉類區",
         type: "meat",
         items: [
           { name: "豬肉片", price: 35 }, { name: "牛肉片", price: 40 }, { name: "羊肉片", price: 40 },
@@ -137,7 +125,7 @@
         ]
       },
       {
-        category: "🥬 蔬菜類區 (綠底)",
+        category: "🥬 蔬菜類區",
         type: "veg",
         items: [
           { name: "高麗菜", price: 25 }, { name: "空心菜", price: 25 }, { name: "大陸妹", price: 25 },
@@ -178,8 +166,7 @@
 
     let cart = [];
 
-    // 密碼檢查
-    window.checkPass = function() {
+    document.getElementById('login-btn').onclick = function() {
       const pass = document.getElementById('pass-input').value;
       if (pass === '1234') {
         document.getElementById('lock-screen').style.display = 'none';
@@ -188,15 +175,16 @@
       }
     };
 
-    // 頁面切換
-    window.switchPage = function(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`page-${pageId}`).classList.add('active');
-      event.target.classList.add('active');
-    };
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.onclick = function() {
+        const pageId = this.getAttribute('data-page');
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`page-${pageId}`).classList.add('active');
+        this.classList.add('active');
+      };
+    });
 
-    // 渲染菜單
     function initMenu() {
       const container = document.getElementById('menu-container');
       container.innerHTML = '';
@@ -219,7 +207,6 @@
       });
     }
 
-    // 加入購物車
     function addToCart(item) {
       const existing = cart.find(c => c.name === item.name);
       if (existing) {
@@ -230,7 +217,6 @@
       renderCart();
     }
 
-    // 渲染購物車與費用計算
     function renderCart() {
       const tbody = document.getElementById('cart-items');
       tbody.innerHTML = '';
@@ -239,21 +225,26 @@
       cart.forEach((item, index) => {
         const itemTotal = item.price * item.qty;
         subtotal += itemTotal;
-        tbody.innerHTML += `
-          <tr>
-            <td>${item.name.replace('\n', ' ')}</td>
-            <td>
-              <button onclick="changeQty(${index}, -1)">-</button>
-              ${item.qty}
-              <button onclick="changeQty(${index}, 1)">+</button>
-            </td>
-            <td>$${itemTotal}</td>
-            <td><button onclick="removeItem(${index})">✕</button></td>
-          </tr>
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.name.replace('\n', ' ')}</td>
+          <td>
+            <button class="qty-btn-minus">-</button>
+            ${item.qty}
+            <button class="qty-btn-plus">+</button>
+          </td>
+          <td>$${itemTotal}</td>
+          <td><button class="remove-btn">✕</button></td>
         `;
+
+        tr.querySelector('.qty-btn-minus').onclick = () => changeQty(index, -1);
+        tr.querySelector('.qty-btn-plus').onclick = () => changeQty(index, 1);
+        tr.querySelector('.remove-btn').onclick = () => removeItem(index);
+
+        tbody.appendChild(tr);
       });
 
-      // 包裝費邏輯：未滿 $50 加收 $2
       let packFee = (subtotal > 0 && subtotal < 50) ? 2 : 0;
       let total = subtotal + packFee;
 
@@ -261,25 +252,23 @@
       document.getElementById('total-amount').innerText = total;
     }
 
-    window.changeQty = function(index, delta) {
+    function changeQty(index, delta) {
       cart[index].qty += delta;
       if (cart[index].qty <= 0) cart.splice(index, 1);
       renderCart();
-    };
+    }
 
-    window.removeItem = function(index) {
+    function removeItem(index) {
       cart.splice(index, 1);
       renderCart();
-    };
+    }
 
-    // 送出訂單至 Firebase 雲端
-    window.submitOrder = function() {
+    document.getElementById('submit-btn').onclick = function() {
       if (cart.length === 0) return alert('請先選擇餐點！');
 
       let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
       let packFee = (subtotal < 50) ? 2 : 0;
       let total = subtotal + packFee;
-      // 容器規則：滿 $60 使用紙碗，否則使用塑膠袋
       let containerType = (total >= 60) ? "紙碗" : "塑膠袋";
 
       const orderData = {
@@ -297,7 +286,6 @@
       }).catch(err => alert('送單失敗：' + err.message));
     };
 
-    // 即時監聽 Firebase 資料庫
     onValue(ordersRef, (snapshot) => {
       const data = snapshot.val();
       const kdsContainer = document.getElementById('kds-container');
@@ -315,17 +303,23 @@
           if (order.status === 'pending') {
             let itemsHtml = order.items.map(i => `<div class="kds-item">• ${i.name.replace('\n', ' ')} x ${i.qty}</div>`).join('');
             
-            kdsContainer.innerHTML += `
-              <div class="kds-card">
-                <div class="kds-header">
-                  <span>時間：${order.timestamp}</span>
-                  <span>$${order.total}</span>
-                </div>
-                ${itemsHtml}
-                <div class="kds-container-tag">包裝：${order.container}</div>
-                <button class="complete-btn" onclick="completeOrder('${key}')">出餐完成</button>
+            const card = document.createElement('div');
+            card.className = 'kds-card';
+            card.innerHTML = `
+              <div class="kds-header">
+                <span>時間：${order.timestamp}</span>
+                <span>$${order.total}</span>
               </div>
+              ${itemsHtml}
+              <div class="kds-container-tag">包裝：${order.container}</div>
+              <button class="complete-btn">出餐完成</button>
             `;
+
+            card.querySelector('.complete-btn').onclick = function() {
+              update(ref(db, `orders/${key}`), { status: 'completed' });
+            };
+
+            kdsContainer.appendChild(card);
           }
         });
       }
@@ -333,10 +327,6 @@
       document.getElementById('stat-count').innerText = orderCount;
       document.getElementById('stat-revenue').innerText = totalRevenue;
     });
-
-    window.completeOrder = function(orderId) {
-      update(ref(db, `orders/${orderId}`), { status: 'completed' });
-    };
 
     initMenu();
   </script>
