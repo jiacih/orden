@@ -29,7 +29,7 @@
     .category-title { font-size: 20px; font-weight: bold; margin: 15px 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #ddd; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
     
-    .item-btn { padding: 12px 5px; font-size: 16px; font-weight: bold; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center; word-break: break-all; white-space: pre-line; min-height: 60px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; }
+    .item-btn { padding: 12px 5px; font-size: 15px; font-weight: bold; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center; word-break: break-all; white-space: pre-line; min-height: 65px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; line-height: 1.2; }
     .item-btn.meat { background-color: #ffdddd; border-color: #ff9999; color: #990000; }
     .item-btn.veg { background-color: #ddffdd; border-color: #99ff99; color: #006600; }
 
@@ -42,11 +42,10 @@
     /* 廚房顯示頁面 */
     .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
     .kds-card { background: white; border-radius: 8px; border-top: 6px solid #3498db; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .kds-card.urgent { border-top-color: #e74c3c; }
     .kds-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     .kds-item { font-size: 18px; font-weight: bold; margin: 5px 0; white-space: pre-line; }
-    .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 5px; }
-    .complete-btn { width: 100%; margin-top: 15px; padding: 10px; background: #34495e; color: white; border: none; font-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 5px; font-weight: bold; }
+    .complete-btn { width: 100%; margin-top: 15px; padding: 10px; background: #34495e; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
 
     /* 統計頁面 */
     .stat-card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -54,14 +53,14 @@
 </head>
 <body>
 
-  <!-- 密碼鎖控制頁 -->
+  <!-- 密碼鎖畫面 -->
   <div id="lock-screen">
     <h2>呷百二 POS 系統</h2>
     <input type="password" id="pass-input" placeholder="請輸入密碼">
     <button onclick="checkPass()">登入</button>
   </div>
 
-  <!-- 導覽列 -->
+  <!-- 頂部導覽列 -->
   <div class="nav-bar">
     <button class="nav-btn active" onclick="switchPage('pos')">📱 櫃台點餐</button>
     <button class="nav-btn" onclick="switchPage('kds')">🖥️ 廚房顯示</button>
@@ -103,12 +102,11 @@
     </div>
   </div>
 
-  <!-- 導入 Firebase SDK (版本 10.x) -->
+  <!-- 導入 Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 您的 Firebase 認證金鑰
     const firebaseConfig = {
       apiKey: "AIzaSyDk-WPutNSdzZzPktNnOR1s7OuOSEi5caA",
       authDomain: "orden-pos.firebaseapp.com",
@@ -120,16 +118,62 @@
       measurementId: "G-GT7YTFEJD8"
     };
 
-    // 初始化 Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const ordersRef = ref(db, 'orders');
 
-    // 菜單資料
+    // 完整 96 項菜單資料
     const menuData = [
-      { category: "肉類", type: "meat", items: [ { name: "豬肉片", price: 35 }, { name: "牛肉片", price: 40 }, { name: "雞胸肉", price: 35 } ] },
-      { category: "蔬菜類", type: "veg", items: [ { name: "高麗菜", price: 25 }, { name: "空心菜", price: 25 }, { name: "金針菇", price: 20 } ] },
-      { category: "火鍋料 / 特殊", type: "normal", items: [ { name: "麻糬燒\n(口味)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 } ] }
+      {
+        category: "🥩 肉類區 (紅底)",
+        type: "meat",
+        items: [
+          { name: "豬肉片", price: 35 }, { name: "牛肉片", price: 40 }, { name: "羊肉片", price: 40 },
+          { name: "雞胸肉", price: 35 }, { name: "鴨肉片", price: 40 }, { name: "培根豬", price: 35 },
+          { name: "培根牛", price: 40 }, { name: "豬皮", price: 20 }, { name: "豬耳朵", price: 35 },
+          { name: "豬肝", price: 30 }, { name: "豬心", price: 35 }, { name: "大腸頭", price: 50 },
+          { name: "雞心", price: 25 }, { name: "雞屁股", price: 25 }, { name: "雞胗", price: 25 },
+          { name: "鴨翅", price: 30 }, { name: "鴨舌", price: 40 }, { name: "鳥蛋", price: 20 }
+        ]
+      },
+      {
+        category: "🥬 蔬菜類區 (綠底)",
+        type: "veg",
+        items: [
+          { name: "高麗菜", price: 25 }, { name: "空心菜", price: 25 }, { name: "大陸妹", price: 25 },
+          { name: "小白菜", price: 25 }, { name: "青花菜", price: 30 }, { name: "水蓮", price: 30 },
+          { name: "金針菇", price: 20 }, { name: "香菇", price: 25 }, { name: "杏鮑菇", price: 25 },
+          { name: "木耳", price: 20 }, { name: "玉米筍", price: 25 }, { name: "蘿蔔", price: 15 },
+          { name: "絲瓜", price: 25 }, { name: "苦瓜", price: 25 }, { name: "四季豆", price: 30 },
+          { name: "蓮藕", price: 30 }, { name: "大芋頭", price: 25 }, { name: "小芋頭", price: 20 }
+        ]
+      },
+      {
+        category: "🍢 豆製品 / 火鍋料 / 麵類",
+        type: "normal",
+        items: [
+          { name: "麻糬燒\n(口味)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 },
+          { name: "大豆干", price: 20 }, { name: "小豆干", price: 15 }, { name: "百頁豆腐", price: 20 },
+          { name: "凍豆腐", price: 15 }, { name: "油豆腐", price: 15 }, { name: "豆皮", price: 20 },
+          { name: "蘭花干", price: 20 }, { name: "素雞", price: 15 }, { name: "素腰花", price: 20 },
+          { name: "水晶餃", price: 20 }, { name: "貢丸", price: 20 }, { name: "香菇丸", price: 20 },
+          { name: "花枝丸", price: 25 }, { name: "芋頭丸", price: 25 }, { name: "燕丸", price: 20 },
+          { name: "魚包蛋", price: 25 }, { name: "起司球", price: 25 }, { name: "蟹肉棒", price: 15 },
+          { name: "魚餃", price: 20 }, { name: "蝦餃", price: 20 }, { name: "蛋餃", price: 20 },
+          { name: "竹輪", price: 15 }, { name: "鑫鑫腸", price: 15 }, { name: "米血", price: 15 },
+          { name: "糯米腸", price: 20 }, { name: "蘿蔔糕", price: 20 }, { name: "年糕", price: 20 },
+          { name: "王子麵", price: 15 }, { name: "科學麵", price: 15 }, { name: "蒸煮麵", price: 20 },
+          { name: "意麵", price: 20 }, { name: "雞絲麵", price: 20 }, { name: "烏龍麵", price: 25 },
+          { name: "冬粉", price: 15 }, { name: "寬粉", price: 20 }, { name: "韓國拉麵", price: 30 },
+          { name: "海帶", price: 15 }, { name: "海帶芽", price: 20 }, { name: "蒟蒻條", price: 15 },
+          { name: "蒟蒻絲", price: 15 }, { name: "百頁捲", price: 20 }, { name: "樓梯", price: 15 },
+          { name: "黑輪", price: 15 }, { name: "九層塔花枝丸", price: 25 }, { name: "龍蝦沙拉丸", price: 25 },
+          { name: "麻辣丸", price: 25 }, { name: "牛肉丸", price: 30 }, { name: "墨魚丸", price: 30 },
+          { name: "魚豆腐", price: 20 }, { name: "魚卵捲", price: 20 }, { name: "花枝捲", price: 20 },
+          { name: "高麗菜捲", price: 30 }, { name: "苦瓜封肉", price: 35 }, { name: "油豆腐包肉", price: 30 },
+          { name: "皮蛋", price: 20 }, { name: "溏心蛋", price: 25 }, { name: "滷蛋", price: 15 }
+        ]
+      }
     ];
 
     let cart = [];
@@ -246,7 +290,6 @@
         timestamp: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
-      // 寫入 Firebase
       push(ordersRef, orderData).then(() => {
         alert('訂單已傳送到廚房！');
         cart = [];
@@ -254,7 +297,7 @@
       }).catch(err => alert('送單失敗：' + err.message));
     };
 
-    // 即時監聽 Firebase 資料庫（A 手機送單，B 手機自動同步更新）
+    // 即時監聽 Firebase 資料庫
     onValue(ordersRef, (snapshot) => {
       const data = snapshot.val();
       const kdsContainer = document.getElementById('kds-container');
@@ -287,12 +330,10 @@
         });
       }
 
-      // 更新統計
       document.getElementById('stat-count').innerText = orderCount;
       document.getElementById('stat-revenue').innerText = totalRevenue;
     });
 
-    // 廚房點擊出餐完成
     window.completeOrder = function(orderId) {
       update(ref(db, `orders/${orderId}`), { status: 'completed' });
     };
