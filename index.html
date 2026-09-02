@@ -49,6 +49,7 @@
     .delete-btn { flex: 1; padding: 10px; background: #c0392b; color: white; border: none; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
     .stat-card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .export-btn { padding: 12px 20px; background: #2980b9; color: white; border: none; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -97,6 +98,7 @@
       <h3>今日營業摘要</h3>
       <p>總訂單數：<strong id="stat-count">0</strong> 筆</p>
       <p>總營業額：$<strong id="stat-revenue">0</strong> 元</p>
+      <button class="export-btn" id="export-excel-btn">📥 匯出今日訂單 (Excel / CSV)</button>
     </div>
   </div>
 
@@ -121,6 +123,40 @@
 
     const rawMenuData = [
       {
+        category: "🍢 豆製品 / 火鍋料區",
+        type: "normal",
+        items: [
+          { name: "苦瓜封肉", price: 35 }, { name: "牛肉丸", price: 30 }, { name: "墨魚丸", price: 30 },
+          { name: "高麗菜捲", price: 30 }, { name: "油豆腐包肉", price: 30 }, { name: "花枝丸", price: 25 },
+          { name: "芋頭丸", price: 25 }, { name: "魚包蛋", price: 25 }, { name: "起司球", price: 25 },
+          { name: "九層塔花枝丸", price: 25 }, { name: "龍蝦沙拉丸", price: 25 }, { name: "麻辣丸", price: 25 },
+          { name: "溏心蛋", price: 25 }, { name: "大豆干", price: 20 }, { name: "百頁豆腐", price: 20 },
+          { name: "豆皮", price: 20 }, { name: "蘭花干", price: 20 }, { name: "素腰花", price: 20 },
+          { name: "水晶餃", price: 20 }, { name: "貢丸", price: 20 }, { name: "香菇丸", price: 20 },
+          { name: "燕丸", price: 20 }, { name: "魚餃", price: 20 }, { name: "蝦餃", price: 20 },
+          { name: "蛋餃", price: 20 }, { name: "糯米腸", price: 20 }, { name: "蘿蔔糕", price: 20 },
+          { name: "年糕", price: 20 }, { name: "海帶芽", price: 20 }, { name: "百頁捲", price: 20 },
+          { name: "魚豆腐", price: 20 }, { name: "魚卵捲", price: 20 }, { name: "花枝捲", price: 20 },
+          { name: "皮蛋", price: 20 }, { name: "麻糬燒\n(原味)", price: 20 }, { name: "麻糬燒\n(花生)", price: 20 },
+          { name: "麻糬燒\n(芝麻)", price: 20 }, { name: "麻糬燒\n(起司)", price: 20 }, { name: "麻糬燒\n(抹茶)", price: 20 },
+          { name: "麻糬燒\n(黑糖)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 },
+          { name: "小豆干", price: 15 }, { name: "凍豆腐", price: 15 }, { name: "油豆腐", price: 15 },
+          { name: "素雞", price: 15 }, { name: "蟹肉棒", price: 15 }, { name: "竹輪", price: 15 },
+          { name: "鑫鑫腸", price: 15 }, { name: "米血", price: 15 }, { name: "海帶", price: 15 },
+          { name: "蒟蒻條", price: 15 }, { name: "蒟蒻絲", price: 15 }, { name: "樓梯", price: 15 },
+          { name: "黑輪", price: 15 }, { name: "滷蛋", price: 15 }
+        ]
+      },
+      {
+        category: "🍜 主食 / 麵類區",
+        type: "normal",
+        items: [
+          { name: "韓國拉麵", price: 30 }, { name: "烏龍麵", price: 25 }, { name: "蒸煮麵", price: 20 },
+          { name: "意麵", price: 20 }, { name: "雞絲麵", price: 20 }, { name: "寬粉", price: 20 },
+          { name: "王子麵", price: 15 }, { name: "科學麵", price: 15 }, { name: "冬粉", price: 15 }
+        ]
+      },
+      {
         category: "🥩 肉類區",
         type: "meat",
         items: [
@@ -143,50 +179,16 @@
           { name: "苦瓜", price: 25 }, { name: "大芋頭", price: 25 }, { name: "金針菇", price: 20 },
           { name: "木耳", price: 20 }, { name: "小芋頭", price: 20 }, { name: "蘿蔔", price: 15 }
         ]
-      },
-      {
-        category: "🍜 主食 / 麵類區",
-        type: "normal",
-        items: [
-          { name: "韓國拉麵", price: 30 }, { name: "烏龍麵", price: 25 }, { name: "蒸煮麵", price: 20 },
-          { name: "意麵", price: 20 }, { name: "雞絲麵", price: 20 }, { name: "寬粉", price: 20 },
-          { name: "王子麵", price: 15 }, { name: "科學麵", price: 15 }, { name: "冬粉", price: 15 }
-        ]
-      },
-      {
-        category: "🍢 豆製品 / 火鍋料區",
-        type: "normal",
-        items: [
-          { name: "苦瓜封肉", price: 35 }, { name: "牛肉丸", price: 30 }, { name: "墨魚丸", price: 30 },
-          { name: "高麗菜捲", price: 30 }, { name: "油豆腐包肉", price: 30 }, { name: "花枝丸", price: 25 },
-          { name: "芋頭丸", price: 25 }, { name: "魚包蛋", price: 25 }, { name: "起司球", price: 25 },
-          { name: "九層塔花枝丸", price: 25 }, { name: "龍蝦沙拉丸", price: 25 }, { name: "麻辣丸", price: 25 },
-          { name: "溏心蛋", price: 25 }, { name: "大豆干", price: 20 }, { name: "百頁豆腐", price: 20 },
-          { name: "豆皮", price: 20 }, { name: "蘭花干", price: 20 }, { name: "素腰花", price: 20 },
-          { name: "水晶餃", price: 20 }, { name: "貢丸", price: 20 }, { name: "香菇丸", price: 20 },
-          { name: "燕丸", price: 20 }, { name: "魚饺", price: 20 }, { name: "蝦餃", price: 20 },
-          { name: "蛋餃", price: 20 }, { name: "糯米腸", price: 20 }, { name: "蘿蔔糕", price: 20 },
-          { name: "年糕", price: 20 }, { name: "海帶芽", price: 20 }, { name: "百頁捲", price: 20 },
-          { name: "魚豆腐", price: 20 }, { name: "魚卵捲", price: 20 }, { name: "花枝捲", price: 20 },
-          { name: "皮蛋", price: 20 }, { name: "麻糬燒(原味)", price: 20 }, { name: "麻糬燒(花生)", price: 20 },
-          { name: "麻糬燒(芝麻)", price: 20 }, { name: "麻糬燒(起司)", price: 20 }, { name: "麻糬燒(抹茶)", price: 20 },
-          { name: "麻糬燒(黑糖)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 },
-          { name: "小豆干", price: 15 }, { name: "凍豆腐", price: 15 }, { name: "油豆腐", price: 15 },
-          { name: "素雞", price: 15 }, { name: "蟹肉棒", price: 15 }, { name: "竹輪", price: 15 },
-          { name: "鑫鑫腸", price: 15 }, { name: "米血", price: 15 }, { name: "海帶", price: 15 },
-          { name: "蒟蒻條", price: 15 }, { name: "蒟蒻絲", price: 15 }, { name: "樓梯", price: 15 },
-          { name: "黑輪", price: 15 }, { name: "滷蛋", price: 15 }
-        ]
       }
     ];
 
-    // 自動依據價格高至低排序
     const menuData = rawMenuData.map(cat => ({
       ...cat,
       items: [...cat.items].sort((a, b) => b.price - a.price)
     }));
 
     let cart = [];
+    let currentOrdersData = {};
 
     document.getElementById('login-btn').onclick = function() {
       const pass = document.getElementById('pass-input').value;
@@ -300,12 +302,16 @@
       let total = subtotal + packFee;
       let containerType = (total >= 60) ? "紙碗" : "塑膠袋";
 
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+
       const orderData = {
         items: cart,
         total: total,
         container: containerType,
         status: "pending",
-        timestamp: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        date: dateStr,
+        timestamp: now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
       push(ordersRef, orderData).then(() => {
@@ -317,6 +323,7 @@
 
     onValue(ordersRef, (snapshot) => {
       const data = snapshot.val();
+      currentOrdersData = data || {};
       const kdsContainer = document.getElementById('kds-container');
       kdsContainer.innerHTML = '';
 
@@ -365,6 +372,31 @@
       document.getElementById('stat-count').innerText = orderCount;
       document.getElementById('stat-revenue').innerText = totalRevenue;
     });
+
+    // 匯出 Excel (CSV)
+    document.getElementById('export-excel-btn').onclick = function() {
+      if (!currentOrdersData || Object.keys(currentOrdersData).length === 0) {
+        return alert('目前尚無訂單紀錄可供匯出！');
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      let csvContent = "\uFEFF日期,時間,點餐明細,總金額,包裝方式,狀態\n";
+
+      Object.values(currentOrdersData).forEach(order => {
+        let itemsSummary = order.items.map(i => `${i.name.replace('\n', '')}x${i.qty}`).join('; ');
+        let statusText = order.status === 'completed' ? '已出餐' : '待處理';
+        csvContent += `"${order.date || todayStr}","${order.timestamp}","${itemsSummary}","${order.total}","${order.container}","${statusText}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `呷百二訂單紀錄_${todayStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
 
     initMenu();
   </script>
