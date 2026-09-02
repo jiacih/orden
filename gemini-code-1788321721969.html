@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>呷百二滷味店 - POS系統</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { margin: 0; padding: 0; background-color: #f4f4f9; }
+
+    /* 密碼鎖畫面 */
+    #lock-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #2c3e50; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: white; }
+    #lock-screen input { font-size: 24px; padding: 10px; text-align: center; width: 220px; margin: 15px 0; border-radius: 8px; border: none; }
+    #lock-screen button { font-size: 20px; padding: 10px 30px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+    /* 頂部導覽列 */
+    .nav-bar { display: flex; background: #333; color: white; }
+    .nav-btn { flex: 1; padding: 15px; text-align: center; font-size: 18px; cursor: pointer; border: none; background: transparent; color: white; font-weight: bold; }
+    .nav-btn.active { background: #e74c3c; }
+
+    .page { display: none; padding: 15px; }
+    .page.active { display: flex; }
+
+    /* POS 點餐版面 */
+    #pos-page { flex-direction: row; gap: 15px; height: calc(100vh - 55px); }
+    .menu-section { flex: 6.5; overflow-y: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .cart-section { flex: 3.5; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+
+    .category-title { font-size: 22px; font-weight: bold; margin: 15px 0 10px 0; color: #d35400; border-bottom: 2px solid #e67e22; padding-bottom: 4px; }
+    .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 10px; }
+    
+    /* 按鈕字體加大與基礎樣式 */
+    .item-btn { padding: 12px 6px; font-size: 18px; font-weight: bold; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; color: #2c3e50; cursor: pointer; text-align: center; line-height: 1.25; min-height: 75px; display: flex; flex-direction: column; justify-content: center; align-items: center; word-break: break-all; }
+    .item-btn:active { transform: scale(0.96); }
+    .item-price { font-size: 15px; margin-top: 4px; font-weight: normal; opacity: 0.9; }
+
+    /* 特別色彩標示 */
+    .item-btn.meat-item { background-color: #e74c3c !important; color: #ffffff !important; border-color: #c0392b !important; }
+    .item-btn.veg-item { background-color: #27ae60 !important; color: #ffffff !important; border-color: #219653 !important; }
+
+    /* 清單與客製化按鈕 */
+    .cart-list { flex: 1; overflow-y: auto; border-bottom: 1px solid #eee; margin-bottom: 10px; }
+    .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 17px; }
+    .qty-btn { width: 32px; height: 32px; font-size: 18px; font-weight: bold; border-radius: 50%; border: 1px solid #ccc; background: #eee; cursor: pointer; margin: 0 4px; }
+
+    .option-group { margin: 8px 0; }
+    .option-title { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+    .option-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+    .opt-btn { padding: 6px 12px; font-size: 15px; border: 1px solid #ccc; border-radius: 5px; background: #fff; cursor: pointer; }
+    .opt-btn.selected { background: #e67e22; color: white; border-color: #d35400; font-weight: bold; }
+
+    .summary-box { background: #fcfcfc; padding: 10px; border: 1px solid #eaeded; border-radius: 6px; margin: 8px 0; }
+    .submit-btn { width: 100%; padding: 16px; font-size: 22px; font-weight: bold; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; }
+
+    /* KDS 廚房顯示頁面 */
+    #kds-page { flex-direction: column; height: calc(100vh - 55px); width: 100%; }
+    .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; overflow-y: auto; }
+    .order-card { background: white; border: 2px solid #2c3e50; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; }
+    .order-header { display: flex; justify-content: space-between; font-size: 20px; font-weight: bold; border-bottom: 2px solid #34495e; padding-bottom: 6px; }
+    .container-tag { font-size: 18px; font-weight: bold; color: #c0392b; background: #fadbd8; padding: 4px 8px; border-radius: 4px; margin: 8px 0; }
+    .kds-items { font-size: 19px; line-height: 1.6; margin: 10px 0; flex: 1; }
+    .finish-btn { width: 100%; padding: 14px; font-size: 20px; font-weight: bold; background: #2980b9; color: white; border: none; border-radius: 6px; cursor: pointer; }
+
+    /* 報表頁面 */
+    #report-page { flex-direction: column; gap: 15px; width: 100%; }
+    .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .stat-title { font-size: 16px; color: #7f8c8d; }
+    .stat-value { font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <!-- 密碼鎖遮罩 -->
+  <div id="lock-screen">
+    <h2>🔒 呷百二點餐系統驗證</h2>
+    <input type="password" id="pass-input" placeholder="請輸入密碼" />
+    <button onclick="checkPassword()">登入系統</button>
+  </div>
+
+  <!-- 頁面導覽列 -->
+  <div class="nav-bar">
+    <button class="nav-btn active" onclick="switchPage('pos', this)">📱 櫃台點餐 (媽媽)</button>
+    <button class="nav-btn" onclick="switchPage('kds', this)">🖥️ 廚房顯示 (爸爸)</button>
+    <button class="nav-btn" onclick="switchPage('report', this)">📊 營業額統計</button>
+  </div>
+
+  <!-- 1. 點餐頁面 -->
+  <div id="pos-page" class="page active">
+    <div class="menu-section">
+      <div class="category-title">鮮品 / 火鍋料 / 肉類</div>
+      <div class="item-grid" id="menu-fresh"></div>
+
+      <div class="category-title">蔬菜類</div>
+      <div class="item-grid" id="menu-veg"></div>
+
+      <div class="category-title">麵類 / 主食</div>
+      <div class="item-grid" id="menu-noodle"></div>
+    </div>
+
+    <div class="cart-section">
+      <h3 style="margin: 0 0 10px 0;">目前點餐明細</h3>
+      <div class="cart-list" id="cart-list"></div>
+
+      <div class="option-group">
+        <div class="option-title">湯乾：</div>
+        <div class="option-btns">
+          <button class="opt-btn selected" onclick="setOpt('soup','乾的',this)">乾的</button>
+          <button class="opt-btn" onclick="setOpt('soup','湯的',this)">湯的</button>
+        </div>
+      </div>
+
+      <div class="option-group">
+        <div class="option-title">辣度：</div>
+        <div class="option-btns">
+          <button class="opt-btn selected" onclick="setOpt('spicy','不辣',this)">不辣</button>
+          <button class="opt-btn" onclick="setOpt('spicy','微辣',this)">微辣</button>
+          <button class="opt-btn" onclick="setOpt('spicy','辣',this)">辣</button>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <div>餐點小計：$<span id="subtotal">0</span></div>
+        <div>包材費：$<span id="packaging-fee">0</span> <small id="pack-tip" style="color:red;"></small></div>
+        <div style="font-size: 16px; font-weight: bold; color: #c0392b; margin-top: 4px;">盛裝容器：<span id="container-type">袋裝</span></div>
+        <hr style="margin: 6px 0;">
+        <div style="font-size: 22px; font-weight: bold; color: #27ae60;">應收總計：$<span id="total">0</span> 元</div>
+      </div>
+
+      <button class="submit-btn" onclick="submitOrder()">送出訂單 ➔</button>
+    </div>
+  </div>
+
+  <!-- 2. 廚房顯示頁面 -->
+  <div id="kds-page" class="page">
+    <div class="kds-grid" id="kds-grid"></div>
+  </div>
+
+  <!-- 3. 統計頁面 -->
+  <div id="report-page" class="page">
+    <div class="stat-card">
+      <div class="stat-title">今日總營業額</div>
+      <div class="stat-value" id="today-revenue">$ 0 元</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">今日完成訂單數</div>
+      <div class="stat-value" id="today-orders">0 單</div>
+    </div>
+  </div>
+
+  <script>
+    const SYSTEM_PASS = "1234";
+
+    // 肉類判定清單
+    const meatNames = ["牛肉片", "豬肉片", "羊肉片", "雞肉片", "嘴邊肉", "大腸", "豬頭皮", "豬耳朵", "豬腳筋", "德式香腸", "雞肝"];
+
+    // 完整 96 項菜單資料
+    const menuData = {
+      fresh: [
+        { name: "鳥蛋", price: 20 }, { name: "豬血糕", price: 20 }, { name: "芋簽條", price: 10 },
+        { name: "麻糬燒(花生)", price: 25 }, { name: "麻糬燒(芝麻)", price: 25 }, { name: "麻糬燒(起司)", price: 25 },
+        { name: "甜不辣", price: 25 }, { name: "龍蝦條", price: 20 }, { name: "蛋餃", price: 25 },
+        { name: "魚餃", price: 20 }, { name: "燕餃", price: 20 }, { name: "黃金蛋", price: 20 },
+        { name: "魚卵捲", price: 20 }, { name: "竹輪", price: 20 }, { name: "貢丸", price: 25 },
+        { name: "蝦球", price: 20 }, { name: "蟹肉棒", price: 20 }, { name: "百頁豆腐", price: 20 },
+        { name: "九層花枝", price: 20 }, { name: "鑫鑫腸", price: 20 }, { name: "豬皮", price: 20 },
+        { name: "鴨肉丸", price: 20 }, { name: "鴨血", price: 25 }, { name: "水晶餃", price: 30 },
+        { name: "鱈魚片板", price: 30 }, { name: "花干", price: 25 }, { name: "大豆皮", price: 30 },
+        { name: "小豆皮", price: 30 }, { name: "大黑豆干", price: 30 }, { name: "蒟蒻片", price: 20 },
+        { name: "炸豆包", price: 20 }, { name: "鱈魚丸", price: 20 }, { name: "蛋白", price: 25 },
+        { name: "芋粿巧", price: 25 }, { name: "花枝丸", price: 35 }, { name: "魚豆腐", price: 35 },
+        { name: "原味貢丸", price: 35 }, { name: "德式香腸", price: 35 }, { name: "起司魚豆腐", price: 35 },
+        { name: "香菇貢丸", price: 35 }, { name: "鮮魷魚", price: 40 }, { name: "高麗菜捲", price: 45 },
+        { name: "花枝片", price: 35 }, { name: "豬腳筋", price: 40 }, { name: "豬頭皮", price: 40 },
+        { name: "牛肉片", price: 40 }, { name: "豬肉片", price: 40 }, { name: "羊肉片", price: 40 },
+        { name: "雞肉片", price: 40 }, { name: "豬耳朵", price: 40 }, { name: "嘴邊肉", price: 50 },
+        { name: "大腸", price: 50 }, { name: "白蘿蔔", price: 10 }, { name: "紅蘿蔔", price: 10 },
+        { name: "嫩油豆腐", price: 10 }, { name: "黑輪", price: 15 }, { name: "雞肝", price: 10 },
+        { name: "素腰花", price: 20 }, { name: "凍豆腐", price: 10 }, { name: "三角豆腐", price: 10 },
+        { name: "海帶", price: 10 }, { name: "龍蝦沙拉", price: 25 }, { name: "魚蛋包", price: 25 },
+        { name: "小魚片板", price: 10 }, { name: "起司燒", price: 25 }
+      ],
+      veg: [
+        { name: "豆芽菜", price: 15 }, { name: "木耳", price: 20 }, { name: "金針菇", price: 30 },
+        { name: "高麗菜", price: 30 }, { name: "花椰菜", price: 30 }, { name: "大陸妹", price: 30 },
+        { name: "A菜", price: 30 }, { name: "地瓜葉", price: 30 }, { name: "空心菜", price: 30 },
+        { name: "娃娃菜", price: 30 }, { name: "青江菜", price: 30 }, { name: "菠菜(冬季)", price: 30 },
+        { name: "香菇", price: 30 }, { name: "杏鮑菇", price: 30 }, { name: "秀珍菇", price: 30 },
+        { name: "四季豆", price: 30 }, { name: "玉米筍", price: 30 }, { name: "水蓮", price: 30 },
+        { name: "蒟蒻絲(盒)", price: 40 }
+      ],
+      noodle: [
+        { name: "王子麵", price: 15 }, { name: "細冬粉", price: 20 }, { name: "年糕", price: 20 },
+        { name: "鍋燒意麵", price: 20 }, { name: "媽媽拉麵", price: 25 }, { name: "麵疙瘩", price: 25 },
+        { name: "粄條", price: 25 }, { name: "寬粉", price: 25 }, { name: "蒸煮麵", price: 25 },
+        { name: "刀削麵", price: 35 }, { name: "烏龍麵", price: 30 }, { name: "韓國麵", price: 40 }
+      ]
+    };
+
+    let cart = [];
+    let orderOptions = { soup: '乾的', spicy: '不辣' };
+    let orderCount = 1;
+    let ordersList = [];
+    let todayRevenue = 0;
+    let completedOrdersCount = 0;
+
+    // 格式化名稱：若含括號從括號處換行，其餘超過 4 字換行
+    function formatName(name) {
+      if (name.includes('(') && name.includes(')')) {
+        const index = name.indexOf('(');
+        return name.slice(0, index) + '<br>' + name.slice(index);
+      } else if (name.length > 4) {
+        return name.slice(0, 4) + '<br>' + name.slice(4);
+      }
+      return name;
+    }
+
+    function checkPassword() {
+      const input = document.getElementById('pass-input').value;
+      if (input === SYSTEM_PASS) {
+        document.getElementById('lock-screen').style.display = 'none';
+        localStorage.setItem('auth_pass', 'true');
+      } else {
+        alert("密碼錯誤！");
+      }
+    }
+
+    if (localStorage.getItem('auth_pass') === 'true') {
+      document.getElementById('lock-screen').style.display = 'none';
+    }
+
+    function initMenu() {
+      renderCategory(menuData.fresh, 'menu-fresh', false);
+      renderCategory(menuData.veg, 'menu-veg', true);
+      renderCategory(menuData.noodle, 'menu-noodle', false);
+    }
+
+    function renderCategory(items, elementId, isVegCategory) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = items.map(item => {
+        let extraClass = "";
+        if (isVegCategory) {
+          extraClass = "veg-item";
+        } else if (meatNames.includes(item.name)) {
+          extraClass = "meat-item";
+        }
+        
+        const displayName = formatName(item.name);
+
+        return `
+          <div class="item-btn ${extraClass}" onclick="addToCart('${item.name}', ${item.price})">
+            <div>${displayName}</div>
+            <div class="item-price">$${item.price}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addToCart(name, price) {
+      const existing = cart.find(i => i.name === name);
+      if (existing) {
+        existing.qty++;
+      } else {
+        cart.push({ name, price, qty: 1 });
+      }
+      updateCart();
+    }
+
+    function changeQty(name, delta) {
+      const item = cart.find(i => i.name === name);
+      if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) {
+          cart = cart.filter(i => i.name !== name);
+        }
+      }
+      updateCart();
+    }
+
+    function updateCart() {
+      const cartContainer = document.getElementById('cart-list');
+      cartContainer.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <div><strong>${item.name}</strong> ($${item.price})</div>
+          <div>
+            <button class="qty-btn" onclick="changeQty('${item.name}', -1)">-</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${item.name}', 1)">+</button>
+          </div>
+        </div>
+      `).join('');
+
+      let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      let packFee = (subtotal > 0 && subtotal < 50) ? 5 : 0;
+      let packTip = packFee > 0 ? "(未滿$50加收包材費)" : "";
+      let containerType = subtotal >= 60 ? "紙碗盛裝" : "袋裝";
+      let total = subtotal + packFee;
+
+      document.getElementById('subtotal').innerText = subtotal;
+      document.getElementById('packaging-fee').innerText = packFee;
+      document.getElementById('pack-tip').innerText = packTip;
+      document.getElementById('container-type').innerText = containerType;
+      document.getElementById('total').innerText = total;
+    }
+
+    function setOpt(type, val, btn) {
+      orderOptions[type] = val;
+      btn.parentElement.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+
+    function submitOrder() {
+      if (cart.length === 0) {
+        alert("請先點選餐點！");
+        return;
+      }
+
+      let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      let packFee = (subtotal > 0 && subtotal < 50) ? 5 : 0;
+      let total = subtotal + packFee;
+      let containerType = subtotal >= 60 ? "紙碗盛裝" : "袋裝";
+
+      const order = {
+        id: orderCount++,
+        time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+        items: [...cart],
+        options: { ...orderOptions },
+        container: containerType,
+        total: total
+      };
+
+      ordersList.push(order);
+      renderKDS();
+
+      cart = [];
+      updateCart();
+      alert("訂單已發送至廚房！");
+    }
+
+    function renderKDS() {
+      const kdsGrid = document.getElementById('kds-grid');
+      kdsGrid.innerHTML = ordersList.map(order => `
+        <div class="order-card">
+          <div>
+            <div class="order-header">
+              <span>單號：#${order.id}</span>
+              <span>${order.time}</span>
+            </div>
+            <div class="container-tag">【${order.container}】 | ${order.options.soup} / ${order.options.spicy}</div>
+            <div class="kds-items">
+              ${order.items.map(item => `<div>• ${item.name} x ${item.qty}</div>`).join('')}
+            </div>
+          </div>
+          <button class="finish-btn" onclick="finishOrder(${order.id})">✓ 完成出餐 (劃掉)</button>
+        </div>
+      `).join('');
+    }
+
+    function finishOrder(id) {
+      const finishedOrder = ordersList.find(o => o.id === id);
+      if (finishedOrder) {
+        todayRevenue += finishedOrder.total;
+        completedOrdersCount++;
+        document.getElementById('today-revenue').innerText = `$ ${todayRevenue} 元`;
+        document.getElementById('today-orders').innerText = `${completedOrdersCount} 單`;
+      }
+      ordersList = ordersList.filter(o => o.id !== id);
+      renderKDS();
+    }
+
+    function switchPage(pageId, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(pageId + '-page').classList.add('active');
+      btn.classList.add('active');
+    }
+
+    initMenu();
+  </script>
+</body>
+</html>
