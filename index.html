@@ -30,7 +30,9 @@
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     
     .item-btn { padding: 8px 4px; font-size: 14px; font-weight: bold; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center; word-break: break-all; white-space: pre-line; min-height: 60px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; line-height: 1.2; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    /* 肉類-紅底顯示 */
     .item-btn.meat { background-color: #ffdddd; border-color: #ff9999; color: #990000; }
+    /* 蔬菜類-綠底顯示 */
     .item-btn.veg { background-color: #ddffdd; border-color: #99ff99; color: #006600; }
 
     .cart-section { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -41,6 +43,13 @@
     .cart-table th, .cart-table td { text-align: left; padding: 10px 4px; border-bottom: 1px solid #eee; font-size: 15px; }
     .qty-btn-minus, .qty-btn-plus { width: 28px; height: 28px; border: 1px solid #ccc; background: #f0f0f0; border-radius: 4px; font-weight: bold; font-size: 16px; margin: 0 4px; }
     .remove-btn { background: none; border: none; color: #e74c3c; font-weight: bold; font-size: 18px; padding: 0 5px; }
+
+    /* 口味選擇區域 */
+    .flavor-section { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; }
+    .flavor-title { font-size: 15px; font-weight: bold; margin-bottom: 8px; color: #333; }
+    .flavor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .flavor-btn { padding: 6px 2px; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; background: #f8f9fa; border-radius: 5px; cursor: pointer; text-align: center; }
+    .flavor-btn.selected { background: #e74c3c; color: white; border-color: #c0392b; }
 
     .cart-total { font-size: 20px; font-weight: bold; color: #e74c3c; margin: 15px 0; text-align: right; }
     .pack-fee { color: #e67e22; font-size: 13px; font-weight: normal; }
@@ -54,7 +63,8 @@
     .kds-card { background: white; border-radius: 8px; border-top: 6px solid #3498db; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .kds-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     .kds-order-num { color: #e74c3c; font-size: 20px; font-weight: bold; }
-    .kds-item { font-size: 20px; font-weight: bold; margin: 6px 0; white-space: pre-line; line-height: 1.3; color: #2c3e50; }
+    .kds-item { font-size: 18px; font-weight: bold; margin: 4px 0; white-space: pre-line; line-height: 1.3; color: #2c3e50; }
+    .kds-flavors { font-size: 15px; color: #d35400; font-weight: bold; margin: 6px 0; background: #fef5e7; padding: 4px 8px; border-radius: 4px; }
     .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 6px; font-weight: bold; }
     .kds-actions { display: flex; gap: 8px; margin-top: 12px; }
     .complete-btn { flex: 2; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; }
@@ -113,6 +123,13 @@
             </thead>
             <tbody id="cart-items"></tbody>
           </table>
+
+          <!-- 口味選擇區域 -->
+          <div class="flavor-section">
+            <div class="flavor-title">🌶️ 口味調整選擇：</div>
+            <div class="flavor-grid" id="flavor-container"></div>
+          </div>
+
           <div class="cart-total">
             <div id="pack-fee-text" class="pack-fee"></div>
             總金額: $<span id="total-amount">0</span>
@@ -160,7 +177,11 @@
     const db = getDatabase(app);
     const ordersRef = ref(db, 'orders');
 
+    // 自動換行處理邏輯 (括弧換行 / 4字以上換行)
     function formatItemName(name) {
+      if (name.indexOf('麻糬燒') !== -1) {
+        return name.replace('(', '\n(');
+      }
       if (name.indexOf('\n') !== -1) return name;
       if (name.length > 4) {
         let result = '';
@@ -172,73 +193,78 @@
       return name;
     }
 
+    // 完全對照 0115菜單.xlsx 資料
     const rawMenuData = [
       {
-        category: "🍢 豆制品 / 火鍋料區",
+        category: "🍢 火鍋料區",
         type: "normal",
         items: [
-          { name: "苦瓜封肉", price: 35 }, { name: "牛肉丸", price: 30 }, { name: "墨魚丸", price: 30 },
-          { name: "高麗菜捲", price: 30 }, { name: "油豆腐包肉", price: 30 }, { name: "花枝丸", price: 25 },
-          { name: "芋頭丸", price: 25 }, { name: "魚包蛋", price: 25 }, { name: "起司球", price: 25 },
-          { name: "九層塔花枝丸", price: 25 }, { name: "龍蝦沙拉丸", price: 25 }, { name: "麻辣丸", price: 25 },
-          { name: "溏心蛋", price: 25 }, { name: "大豆干", price: 20 }, { name: "百頁豆腐", price: 20 },
-          { name: "豆皮", price: 20 }, { name: "蘭花干", price: 20 }, { name: "素腰花", price: 20 },
-          { name: "水晶餃", price: 20 }, { name: "貢丸", price: 20 }, { name: "香菇丸", price: 20 },
-          { name: "燕丸", price: 20 }, { name: "魚餃", price: 20 }, { name: "蝦餃", price: 20 },
-          { name: "蛋餃", price: 20 }, { name: "糯米腸", price: 20 }, { name: "蘿蔔糕", price: 20 },
-          { name: "年糕", price: 20 }, { name: "海帶芽", price: 20 }, { name: "百頁捲", price: 20 },
-          { name: "魚豆腐", price: 20 }, { name: "魚卵捲", price: 20 }, { name: "花枝捲", price: 20 },
-          { name: "皮蛋", price: 20 }, { name: "麻糬燒\n(原味)", price: 20 }, { name: "麻糬燒\n(花生)", price: 20 },
-          { name: "麻糬燒\n(芝麻)", price: 20 }, { name: "麻糬燒\n(起司)", price: 20 }, { name: "麻糬燒\n(抹茶)", price: 20 },
-          { name: "麻糬燒\n(黑糖)", price: 20 }, { name: "甜不辣", price: 15 }, { name: "豆包", price: 15 },
-          { name: "小豆干", price: 15 }, { name: "凍豆腐", price: 15 }, { name: "油豆腐", price: 15 },
-          { name: "素雞", price: 15 }, { name: "蟹肉棒", price: 15 }, { name: "竹輪", price: 15 },
-          { name: "鑫鑫腸", price: 15 }, { name: "米血", price: 15 }, { name: "海帶", price: 15 },
-          { name: "蒟蒻條", price: 15 }, { name: "蒟蒻絲", price: 15 }, { name: "樓梯", price: 15 },
-          { name: "黑輪", price: 15 }, { name: "滷蛋", price: 15 }
+          { name: "芋簽條", price: 10 }, { name: "白蘿蔔", price: 10 }, { name: "紅蘿蔔", price: 10 },
+          { name: "嫩油豆腐", price: 10 }, { name: "黑輪", price: 10 }, { name: "凍豆腐", price: 10 },
+          { name: "三角豆腐", price: 10 }, { name: "海帶", price: 10 }, { name: "小魚片板", price: 10 },
+          { name: "黑輪", price: 15 }, { name: "鳥蛋", price: 20 }, { name: "龍蝦條", price: 20 },
+          { name: "魚餃", price: 20 }, { name: "燕餃", price: 20 }, { name: "黃金蛋", price: 20 },
+          { name: "魚卵捲", price: 20 }, { name: "竹輪", price: 20 }, { name: "蝦球", price: 20 },
+          { name: "蟹肉棒", price: 20 }, { name: "百頁豆腐", price: 20 }, { name: "九層花枝", price: 20 },
+          { name: "鑫鑫腸", price: 20 }, { name: "豬皮", price: 20 }, { name: "鴨肉丸", price: 20 },
+          { name: "豬血糕", price: 20 }, { name: "蒟蒻片", price: 20 }, { name: "炸豆包", price: 20 },
+          { name: "鱈魚丸", price: 20 }, { name: "素腰花", price: 20 },
+          { name: "麻糬燒(花生)", price: 25 }, { name: "麻糬燒(芝麻)", price: 25 }, { name: "麻糬燒(起司)", price: 25 },
+          { name: "甜不辣", price: 25 }, { name: "蛋餃", price: 25 }, { name: "貢丸", price: 25 },
+          { name: "鴨血", price: 25 }, { name: "花干", price: 25 }, { name: "蛋白", price: 25 },
+          { name: "芋粿巧", price: 25 }, { name: "龍蝦沙拉", price: 25 }, { name: "魚蛋包", price: 25 },
+          { name: "起司燒", price: 25 }, { name: "水晶餃", price: 30 }, { name: "鱈魚片板", price: 30 },
+          { name: "大豆皮", price: 30 }, { name: "小豆皮", price: 30 }, { name: "大黑豆干", price: 30 },
+          { name: "花枝丸", price: 35 }, { name: "魚豆腐", price: 35 }, { name: "原味貢丸", price: 35 },
+          { name: "起司魚豆腐", price: 35 }, { name: "香菇貢丸", price: 35 }
         ]
       },
       {
-        category: "🍜 主食 / 麵類區",
+        category: "🍜 主食區",
         type: "normal",
         items: [
-          { name: "韓國拉麵", price: 30 }, { name: "烏龍麵", price: 25 }, { name: "蒸煮麵", price: 20 },
-          { name: "意麵", price: 20 }, { name: "雞絲麵", price: 20 }, { name: "寬粉", price: 20 },
-          { name: "王子麵", price: 15 }, { name: "科學麵", price: 15 }, { name: "冬粉", price: 15 }
+          { name: "王子麵", price: 15 }, { name: "細冬粉", price: 20 }, { name: "年糕", price: 20 },
+          { name: "鍋燒意麵", price: 20 }, { name: "媽媽拉麵", price: 25 }, { name: "麵疙瘩", price: 25 },
+          { name: "粄條", price: 25 }, { name: "寬粉", price: 25 }, { name: "蒸煮麵", price: 25 },
+          { name: "烏龍麵", price: 30 }, { name: "刀削麵", price: 35 }, { name: "韓國麵", price: 40 }
         ]
       },
       {
         category: "🥩 肉類區",
         type: "meat",
         items: [
-          { name: "大腸頭", price: 50 }, { name: "牛肉片", price: 40 }, { name: "羊肉片", price: 40 },
-          { name: "鴨肉片", price: 40 }, { name: "培根牛", price: 40 }, { name: "鴨舌", price: 40 },
-          { name: "豬肉片", price: 35 }, { name: "雞胸肉", price: 35 }, { name: "培根豬", price: 35 },
-          { name: "豬耳朵", price: 35 }, { name: "豬心", price: 35 }, { name: "豬肝", price: 30 },
-          { name: "鴨翅", price: 30 }, { name: "雞心", price: 25 }, { name: "雞屁股", price: 25 },
-          { name: "雞胗", price: 25 }, { name: "豬皮", price: 20 }, { name: "鳥蛋", price: 20 }
+          { name: "雞肝", price: 10 }, { name: "德式香腸", price: 35 }, { name: "花枝片", price: 35 },
+          { name: "鮮魷魚", price: 40 }, { name: "豬腳筋", price: 40 }, { name: "豬頭皮", price: 40 },
+          { name: "牛肉片", price: 40 }, { name: "豬肉片", price: 40 }, { name: "羊肉片", price: 40 },
+          { name: "雞肉片", price: 40 }, { name: "豬耳朵", price: 40 }, { name: "高麗菜捲", price: 45 },
+          { name: "嘴邊肉", price: 50 }, { name: "大腸", price: 50 }
         ]
       },
       {
         category: "🥬 蔬菜類區",
         type: "veg",
         items: [
-          { name: "青花菜", price: 30 }, { name: "水蓮", price: 30 }, { name: "四季豆", price: 30 },
-          { name: "蓮藕", price: 30 }, { name: "高麗菜", price: 25 }, { name: "空心菜", price: 25 },
-          { name: "大陸妹", price: 25 }, { name: "小白菜", price: 25 }, { name: "香菇", price: 25 },
-          { name: "杏鮑菇", price: 25 }, { name: "玉米筍", price: 25 }, { name: "絲瓜", price: 25 },
-          { name: "苦瓜", price: 25 }, { name: "大芋頭", price: 25 }, { name: "金針菇", price: 20 },
-          { name: "木耳", price: 20 }, { name: "小芋頭", price: 20 }, { name: "蘿蔔", price: 15 }
+          { name: "豆芽菜", price: 15 }, { name: "木耳", price: 20 },
+          { name: "金針菇", price: 30 }, { name: "高麗菜", price: 30 }, { name: "花椰菜", price: 30 },
+          { name: "大陸妹", price: 30 }, { name: "A菜", price: 30 }, { name: "地瓜葉", price: 30 },
+          { name: "空心菜", price: 30 }, { name: "娃娃菜", price: 30 }, { name: "青江菜", price: 30 },
+          { name: "菠菜冬季", price: 30 }, { name: "香菇", price: 30 }, { name: "杏鮑菇", price: 30 },
+          { name: "秀珍菇", price: 30 }, { name: "四季豆", price: 30 }, { name: "玉米筍", price: 30 },
+          { name: "水蓮", price: 30 }, { name: "蒟蒻絲1盒", price: 40 },
+          { name: "季節蔬菜", price: "時價", isCustomPrice: true }
         ]
       }
     ];
+
+    const flavorOptions = ["不辣", "微辣", "辣", "咖哩醬", "湯的", "乾的", "醬油多", "醬油少", "不要醬油"];
+    let selectedFlavors = [];
 
     const menuData = rawMenuData.map(cat => ({
       ...cat,
       items: cat.items.map(item => ({
         ...item,
         displayName: formatItemName(item.name)
-      })).sort((a, b) => b.price - a.price)
+      }))
     }));
 
     let cart = [];
@@ -298,20 +324,51 @@
         cat.items.forEach(item => {
           const btn = document.createElement('button');
           btn.className = 'item-btn ' + cat.type;
-          btn.innerText = item.displayName + '\n$' + item.price;
+          const priceDisplay = typeof item.price === 'number' ? '$' + item.price : item.price;
+          btn.innerText = item.displayName + '\n' + priceDisplay;
           btn.onclick = () => addToCart(item);
           grid.appendChild(btn);
         });
         container.appendChild(grid);
       });
+
+      // 初始化口味按鈕
+      const flavorContainer = document.getElementById('flavor-container');
+      flavorContainer.innerHTML = '';
+      flavorOptions.forEach(flavor => {
+        const btn = document.createElement('button');
+        btn.className = 'flavor-btn';
+        btn.innerText = flavor;
+        btn.onclick = () => toggleFlavor(flavor, btn);
+        flavorContainer.appendChild(btn);
+      });
+    }
+
+    function toggleFlavor(flavor, btn) {
+      if (selectedFlavors.includes(flavor)) {
+        selectedFlavors = selectedFlavors.filter(f => f !== flavor);
+        btn.classList.remove('selected');
+      } else {
+        selectedFlavors.push(flavor);
+        btn.classList.add('selected');
+      }
     }
 
     function addToCart(item) {
-      const existing = cart.find(c => c.name === item.name);
+      let finalPrice = item.price;
+      if (item.isCustomPrice) {
+        const inputPrice = prompt('請輸入「' + item.name + '」的單價金額：');
+        if (inputPrice === null || inputPrice.trim() === '' || isNaN(inputPrice) || Number(inputPrice) < 0) {
+          return;
+        }
+        finalPrice = Number(inputPrice);
+      }
+
+      const existing = cart.find(c => c.name === item.name && c.price === finalPrice);
       if (existing) {
         existing.qty++;
       } else {
-        cart.push({ ...item, qty: 1 });
+        cart.push({ ...item, price: finalPrice, qty: 1 });
       }
       renderCart();
     }
@@ -340,10 +397,11 @@
         tbody.appendChild(tr);
       });
 
-      let packFee = (subtotal > 0 && subtotal < 50) ? 2 : 0;
+      // 未滿50元收5元包材費，滿60元使用紙碗
+      let packFee = (subtotal > 0 && subtotal < 50) ? 5 : 0;
       let total = subtotal + packFee;
 
-      document.getElementById('pack-fee-text').innerText = packFee > 0 ? "（未滿 $50，含包裝費 $2）" : "";
+      document.getElementById('pack-fee-text').innerText = packFee > 0 ? "（未滿 $50，收包材費 $5）" : "";
       document.getElementById('total-amount').innerText = total;
       document.getElementById('cart-count').innerText = totalQty;
       document.getElementById('float-qty').innerText = totalQty;
@@ -373,6 +431,8 @@
     document.getElementById('clear-cart-btn').onclick = function() {
       if (cart.length > 0 && confirm('確定要清空購物車嗎？')) {
         cart = [];
+        selectedFlavors = [];
+        document.querySelectorAll('.flavor-btn').forEach(b => b.classList.remove('selected'));
         renderCart();
       }
     };
@@ -381,7 +441,7 @@
       if (cart.length === 0) return alert('請先選擇餐點！');
 
       let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-      let packFee = (subtotal < 50) ? 2 : 0;
+      let packFee = (subtotal < 50) ? 5 : 0;
       let total = subtotal + packFee;
       let containerType = (total >= 60) ? "紙碗" : "塑膠袋";
 
@@ -396,6 +456,7 @@
 
       const orderData = {
         items: cart,
+        flavors: selectedFlavors,
         total: total,
         container: containerType,
         status: "pending",
@@ -407,6 +468,8 @@
       push(ordersRef, orderData).then(() => {
         alert('訂單已傳送到廚房！');
         cart = [];
+        selectedFlavors = [];
+        document.querySelectorAll('.flavor-btn').forEach(b => b.classList.remove('selected'));
         renderCart();
         switchPosTab('menu');
       }).catch(err => alert('送單失敗：' + err.message));
@@ -434,9 +497,13 @@
           if (order.status === 'pending') {
             let itemsHtml = order.items.map(i => {
               const displayName = i.displayName || formatItemName(i.name);
-              return '<div class="kds-item">• ' + displayName.replace('\n', ' ') + ' x ' + i.qty + '</div>';
+              return '<div class="kds-item">• ' + displayName.replace('\n', ' ') + ' x ' + i.qty + ' ($' + (i.price * i.qty) + ')</div>';
             }).join('');
             
+            let flavorsHtml = (order.flavors && order.flavors.length > 0)
+              ? '<div class="kds-flavors">口味：' + order.flavors.join('、') + '</div>'
+              : '';
+
             const card = document.createElement('div');
             card.className = 'kds-card';
             card.innerHTML = 
@@ -446,6 +513,7 @@
               '</div>' +
               '<div style="font-weight: bold; margin-bottom: 8px; font-size: 15px;">金額：$' + order.total + '</div>' +
               itemsHtml +
+              flavorsHtml +
               '<div class="kds-container-tag">包裝：' + order.container + '</div>' +
               '<div class="kds-actions">' +
                 '<button class="complete-btn">出餐完成</button>' +
@@ -477,10 +545,10 @@
       }
 
       const todayStr = new Date().toISOString().split('T')[0];
-      let csvContent = "\uFEFF單號,日期時間,點餐明細,總金額,包裝方式,狀態\n";
+      let csvContent = "\uFEFF單號,日期時間,點餐明細,口味選擇,總金額,包裝方式,狀態\n";
 
       const sortedKeys = Object.keys(currentOrdersData).sort((a, b) => {
-        return (currentOrdersData[a].createdAt || 0) - (currentOrdersData[a].createdAt || 0);
+        return (currentOrdersData[a].createdAt || 0) - (currentOrdersData[b].createdAt || 0);
       });
 
       let grandTotalRevenue = 0;
@@ -490,12 +558,12 @@
         const order = currentOrdersData[key];
         grandTotalRevenue += order.total;
         let itemsSummary = order.items.map(i => i.name.replace('\n', '') + 'x' + i.qty).join('; ');
+        let flavorsSummary = (order.flavors && order.flavors.length > 0) ? order.flavors.join(';') : '無';
         let statusText = order.status === 'completed' ? '已出餐' : '待處理';
-        csvContent += '"#' + (idx + 1) + '","' + order.timestamp + '","' + itemsSummary + '","' + order.total + '","' + order.container + '","' + statusText + '"\n';
+        csvContent += '"#' + (idx + 1) + '","' + order.timestamp + '","' + itemsSummary + '","' + flavorsSummary + '","' + order.total + '","' + order.container + '","' + statusText + '"\n';
       });
 
-      // 新增最後合計列
-      csvContent += '"合計","共 ' + grandTotalCount + ' 筆訂單","--","' + grandTotalRevenue + '","--","--"\n';
+      csvContent += '"合計","共 ' + grandTotalCount + ' 筆訂單","--","--","' + grandTotalRevenue + '","--","--"\n';
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
