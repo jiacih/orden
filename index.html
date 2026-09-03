@@ -42,6 +42,7 @@
     .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
     .kds-card { background: white; border-radius: 8px; border-top: 6px solid #3498db; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .kds-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+    .kds-order-num { color: #e74c3c; font-size: 20px; font-weight: bold; }
     .kds-item { font-size: 18px; font-weight: bold; margin: 5px 0; white-space: pre-line; }
     .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 5px; font-weight: bold; }
     .kds-actions { display: flex; gap: 10px; margin-top: 15px; }
@@ -303,15 +304,22 @@
       let containerType = (total >= 60) ? "紙碗" : "塑膠袋";
 
       const now = new Date();
-      const dateStr = now.toISOString().split('T')[0];
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+
+      const timeString = `${month}/${date} ${hours}:${minutes}`;
+      const fullDateStr = `${now.getFullYear()}-${month}-${date}`;
 
       const orderData = {
         items: cart,
         total: total,
         container: containerType,
         status: "pending",
-        date: dateStr,
-        timestamp: now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        date: fullDateStr,
+        timestamp: timeString,
+        createdAt: Date.now()
       };
 
       push(ordersRef, orderData).then(() => {
@@ -331,7 +339,12 @@
       let orderCount = 0;
 
       if (data) {
-        Object.keys(data).forEach(key => {
+        // 將訂單按建立時間排序
+        const sortedOrderKeys = Object.keys(data).sort((a, b) => {
+          return (data[a].createdAt || 0) - (data[b].createdAt || 0);
+        });
+
+        sortedOrderKeys.forEach((key, index) => {
           const order = data[key];
           totalRevenue += order.total;
           orderCount++;
@@ -343,9 +356,10 @@
             card.className = 'kds-card';
             card.innerHTML = `
               <div class="kds-header">
-                <span>時間：${order.timestamp}</span>
-                <span>$${order.total}</span>
+                <span class="kds-order-num">單號 #${index + 1}</span>
+                <span>${order.timestamp}</span>
               </div>
+              <div style="font-weight: bold; margin-bottom: 8px;">金額：$${order.total}</div>
               ${itemsHtml}
               <div class="kds-container-tag">包裝：${order.container}</div>
               <div class="kds-actions">
@@ -380,12 +394,17 @@
       }
 
       const todayStr = new Date().toISOString().split('T')[0];
-      let csvContent = "\uFEFF日期,時間,點餐明細,總金額,包裝方式,狀態\n";
+      let csvContent = "\uFEFF單號,日期時間,點餐明細,總金額,包裝方式,狀態\n";
 
-      Object.values(currentOrdersData).forEach(order => {
+      const sortedKeys = Object.keys(currentOrdersData).sort((a, b) => {
+        return (currentOrdersData[a].createdAt || 0) - (currentOrdersData[b].createdAt || 0);
+      });
+
+      sortedKeys.forEach((key, idx) => {
+        const order = currentOrdersData[key];
         let itemsSummary = order.items.map(i => `${i.name.replace('\n', '')}x${i.qty}`).join('; ');
         let statusText = order.status === 'completed' ? '已出餐' : '待處理';
-        csvContent += `"${order.date || todayStr}","${order.timestamp}","${itemsSummary}","${order.total}","${order.container}","${statusText}"\n`;
+        csvContent += `"#${idx + 1}","${order.timestamp}","${itemsSummary}","${order.total}","${order.container}","${statusText}"\n`;
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
