@@ -16,7 +16,6 @@
     .nav-btn { flex: 1; padding: 12px 5px; text-align: center; font-size: 15px; cursor: pointer; border: none; background: transparent; color: white; font-weight: bold; }
     .nav-btn.active { background: #e74c3c; }
 
-    /* 手機版頁籤樣式 */
     .sub-nav { display: flex; background: #e0e0e0; border-bottom: 1px solid #ccc; }
     .sub-btn { flex: 1; padding: 10px; text-align: center; font-size: 15px; font-weight: bold; border: none; background: transparent; cursor: pointer; color: #555; }
     .sub-btn.active { background: #ffffff; color: #e74c3c; border-bottom: 3px solid #e74c3c; }
@@ -64,19 +63,16 @@
     .stat-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .export-btn { width: 100%; padding: 12px; background: #2980b9; color: white; border: none; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
 
-    /* 💻 電腦版自動優化 (螢幕寬度 >= 768px 時觸發) */
     @media (min-width: 768px) {
       body { padding-bottom: 0; }
-      .sub-nav { display: none; } /* 隱藏手機頁籤 */
-      .floating-cart-bar { display: none !important; } /* 隱藏手機底欄 */
-      
+      .sub-nav { display: none; }
+      .floating-cart-bar { display: none !important; }
       .pos-wrapper { display: flex; gap: 20px; }
-      .pos-view { display: block !important; } /* 強制菜單與購物車同時顯示 */
+      .pos-view { display: block !important; }
       #view-menu { flex: 2; }
       #view-cart { flex: 1; position: sticky; top: 60px; height: fit-content; }
-
-      .grid { grid-template-columns: repeat(4, 1fr); } /* 電腦版菜單變成 4 欄 */
-      .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; } /* 廚房卡片並排 */
+      .grid { grid-template-columns: repeat(4, 1fr); }
+      .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
     }
   </style>
 </head>
@@ -94,19 +90,17 @@
     <button class="nav-btn" data-page="stats">📊 統計</button>
   </div>
 
-  <div id="page-pos" class="page" style="padding: 0;">
+  <div id="page-pos" class="page active" style="padding: 0;">
     <div class="sub-nav">
       <button class="sub-btn active" id="tab-menu-btn">📋 點餐菜單</button>
       <button class="sub-btn" id="tab-cart-btn">🛒 購物車 (<span id="cart-count">0</span>)</button>
     </div>
 
     <div style="padding: 10px;" class="pos-wrapper">
-      <!-- 菜單視圖 -->
       <div id="view-menu" class="pos-view active">
         <div id="menu-container"></div>
       </div>
 
-      <!-- 購物車視圖 -->
       <div id="view-cart" class="pos-view">
         <div class="cart-section">
           <div class="cart-header">
@@ -128,8 +122,7 @@
       </div>
     </div>
 
-    <!-- 底部浮動購物車條 (手機菜單頁顯示) -->
-    <div class="floating-cart-bar" id="floating-cart">
+    <div class="floating-cart-bar" id="floating-cart" style="display: none;">
       <div class="cart-info">共 <span id="float-qty">0</span> 件，小計 $<span id="float-total">0</span></div>
       <div class="go-cart-btn">檢視購物車 ➔</div>
     </div>
@@ -168,7 +161,7 @@
     const ordersRef = ref(db, 'orders');
 
     function formatItemName(name) {
-      if (name.includes('\n')) return name;
+      if (name.indexOf('\n') !== -1) return name;
       if (name.length > 4) {
         let result = '';
         for (let i = 0; i < name.length; i += 4) {
@@ -260,20 +253,18 @@
       }
     };
 
-    // 主頁面切換
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.onclick = function() {
         const pageId = this.getAttribute('data-page');
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`page-${pageId}`).classList.add('active');
+        document.getElementById('page-' + pageId).classList.add('active');
         this.classList.add('active');
       };
     });
 
-    // 點餐子頁籤切換（手機專用）
     function switchPosTab(tab) {
-      if (window.innerWidth >= 768) return; // 電腦版不觸發頁籤切換
+      if (window.innerWidth >= 768) return;
       if (tab === 'menu') {
         document.getElementById('tab-menu-btn').classList.add('active');
         document.getElementById('tab-cart-btn').classList.remove('active');
@@ -306,8 +297,8 @@
         grid.className = 'grid';
         cat.items.forEach(item => {
           const btn = document.createElement('button');
-          btn.className = `item-btn ${cat.type}`;
-          btn.innerText = `${item.displayName}\n$${item.price}`;
+          btn.className = 'item-btn ' + cat.type;
+          btn.innerText = item.displayName + '\n$' + item.price;
           btn.onclick = () => addToCart(item);
           grid.appendChild(btn);
         });
@@ -337,16 +328,10 @@
         totalQty += item.qty;
         
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${item.name.replace('\n', ' ')}</td>
-          <td style="white-space: nowrap;">
-            <button class="qty-btn-minus">-</button>
-            ${item.qty}
-            <button class="qty-btn-plus">+</button>
-          </td>
-          <td>$${itemTotal}</td>
-          <td><button class="remove-btn">✕</button></td>
-        `;
+        tr.innerHTML = '<td>' + item.name.replace('\n', ' ') + '</td>' +
+          '<td style="white-space: nowrap;"><button class="qty-btn-minus">-</button> ' + item.qty + ' <button class="qty-btn-plus">+</button></td>' +
+          '<td>$' + itemTotal + '</td>' +
+          '<td><button class="remove-btn">✕</button></td>';
 
         tr.querySelector('.qty-btn-minus').onclick = () => changeQty(index, -1);
         tr.querySelector('.qty-btn-plus').onclick = () => changeQty(index, 1);
@@ -406,8 +391,8 @@
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
 
-      const timeString = `${month}/${date} ${hours}:${minutes}`;
-      const fullDateStr = `${now.getFullYear()}-${month}-${date}`;
+      const timeString = month + '/' + date + ' ' + hours + ':' + minutes;
+      const fullDateStr = now.getFullYear() + '-' + month + '-' + date;
 
       const orderData = {
         items: cart,
@@ -449,32 +434,31 @@
           if (order.status === 'pending') {
             let itemsHtml = order.items.map(i => {
               const displayName = i.displayName || formatItemName(i.name);
-              return `<div class="kds-item">• ${displayName.replace('\n', ' ')} x ${i.qty}</div>`;
+              return '<div class="kds-item">• ' + displayName.replace('\n', ' ') + ' x ' + i.qty + '</div>';
             }).join('');
             
             const card = document.createElement('div');
             card.className = 'kds-card';
-            card.innerHTML = `
-              <div class="kds-header">
-                <span class="kds-order-num">單號 #${index + 1}</span>
-                <span>${order.timestamp}</span>
-              </div>
-              <div style="font-weight: bold; margin-bottom: 8px; font-size: 15px;">金額：$${order.total}</div>
-              ${itemsHtml}
-              <div class="kds-container-tag">包裝：${order.container}</div>
-              <div class="kds-actions">
-                <button class="complete-btn">出餐完成</button>
-                <button class="delete-btn">刪除</button>
-              </div>
-            `;
+            card.innerHTML = 
+              '<div class="kds-header">' +
+                '<span class="kds-order-num">單號 #' + (index + 1) + '</span>' +
+                '<span>' + order.timestamp + '</span>' +
+              '</div>' +
+              '<div style="font-weight: bold; margin-bottom: 8px; font-size: 15px;">金額：$' + order.total + '</div>' +
+              itemsHtml +
+              '<div class="kds-container-tag">包裝：' + order.container + '</div>' +
+              '<div class="kds-actions">' +
+                '<button class="complete-btn">出餐完成</button>' +
+                '<button class="delete-btn">刪除</button>' +
+              '</div>';
 
             card.querySelector('.complete-btn').onclick = function() {
-              update(ref(db, `orders/${key}`), { status: 'completed' });
+              update(ref(db, 'orders/' + key), { status: 'completed' });
             };
 
             card.querySelector('.delete-btn').onclick = function() {
               if (confirm('確定要刪除這筆訂單嗎？')) {
-                remove(ref(db, `orders/${key}`));
+                remove(ref(db, 'orders/' + key));
               }
             };
 
@@ -501,16 +485,16 @@
 
       sortedKeys.forEach((key, idx) => {
         const order = currentOrdersData[key];
-        let itemsSummary = order.items.map(i => `${i.name.replace('\n', '')}x${i.qty}`).join('; ');
+        let itemsSummary = order.items.map(i => i.name.replace('\n', '') + 'x' + i.qty).join('; ');
         let statusText = order.status === 'completed' ? '已出餐' : '待處理';
-        csvContent += `"#${idx + 1}","${order.timestamp}","${itemsSummary}","${order.total}","${order.container}","${statusText}"\n`;
+        csvContent += '"#' + (idx + 1) + '","' + order.timestamp + '","' + itemsSummary + '","' + order.total + '","' + order.container + '","' + statusText + '"\n';
       });
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
-      link.setAttribute("download", `呷百二訂單紀錄_${todayStr}.csv`);
+      link.setAttribute("download", '呷百二訂單紀錄_' + todayStr + '.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
