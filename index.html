@@ -16,6 +16,7 @@
     .nav-btn { flex: 1; padding: 12px 5px; text-align: center; font-size: 15px; cursor: pointer; border: none; background: transparent; color: white; font-weight: bold; }
     .nav-btn.active { background: #e74c3c; }
 
+    /* 手機版頁籤樣式 */
     .sub-nav { display: flex; background: #e0e0e0; border-bottom: 1px solid #ccc; }
     .sub-btn { flex: 1; padding: 10px; text-align: center; font-size: 15px; font-weight: bold; border: none; background: transparent; cursor: pointer; color: #555; }
     .sub-btn.active { background: #ffffff; color: #e74c3c; border-bottom: 3px solid #e74c3c; }
@@ -62,6 +63,21 @@
 
     .stat-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .export-btn { width: 100%; padding: 12px; background: #2980b9; color: white; border: none; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+
+    /* 💻 電腦版自動優化 (螢幕寬度 >= 768px 時觸發) */
+    @media (min-width: 768px) {
+      body { padding-bottom: 0; }
+      .sub-nav { display: none; } /* 隱藏手機頁籤 */
+      .floating-cart-bar { display: none !important; } /* 隱藏手機底欄 */
+      
+      .pos-wrapper { display: flex; gap: 20px; }
+      .pos-view { display: block !important; } /* 強制菜單與購物車同時顯示 */
+      #view-menu { flex: 2; }
+      #view-cart { flex: 1; position: sticky; top: 60px; height: fit-content; }
+
+      .grid { grid-template-columns: repeat(4, 1fr); } /* 電腦版菜單變成 4 欄 */
+      .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; } /* 廚房卡片並排 */
+    }
   </style>
 </head>
 <body>
@@ -78,13 +94,13 @@
     <button class="nav-btn" data-page="stats">📊 統計</button>
   </div>
 
-  <div id="page-pos" class="page active" style="padding: 0;">
+  <div id="page-pos" class="page" style="padding: 0;">
     <div class="sub-nav">
       <button class="sub-btn active" id="tab-menu-btn">📋 點餐菜單</button>
       <button class="sub-btn" id="tab-cart-btn">🛒 購物車 (<span id="cart-count">0</span>)</button>
     </div>
 
-    <div style="padding: 10px;">
+    <div style="padding: 10px;" class="pos-wrapper">
       <!-- 菜單視圖 -->
       <div id="view-menu" class="pos-view active">
         <div id="menu-container"></div>
@@ -112,7 +128,7 @@
       </div>
     </div>
 
-    <!-- 底部浮動購物車條 (在菜單頁顯示) -->
+    <!-- 底部浮動購物車條 (手機菜單頁顯示) -->
     <div class="floating-cart-bar" id="floating-cart">
       <div class="cart-info">共 <span id="float-qty">0</span> 件，小計 $<span id="float-total">0</span></div>
       <div class="go-cart-btn">檢視購物車 ➔</div>
@@ -244,7 +260,7 @@
       }
     };
 
-    // 頁面切換
+    // 主頁面切換
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.onclick = function() {
         const pageId = this.getAttribute('data-page');
@@ -255,8 +271,9 @@
       };
     });
 
-    // 點餐子頁籤切換
+    // 點餐子頁籤切換（手機專用）
     function switchPosTab(tab) {
+      if (window.innerWidth >= 768) return; // 電腦版不觸發頁籤切換
       if (tab === 'menu') {
         document.getElementById('tab-menu-btn').classList.add('active');
         document.getElementById('tab-cart-btn').classList.remove('active');
@@ -347,11 +364,13 @@
       document.getElementById('float-qty').innerText = totalQty;
       document.getElementById('float-total').innerText = total;
 
-      const isMenuTabActive = document.getElementById('view-menu').classList.contains('active');
-      if (cart.length > 0 && isMenuTabActive) {
-        document.getElementById('floating-cart').style.display = 'flex';
-      } else {
-        document.getElementById('floating-cart').style.display = 'none';
+      if (window.innerWidth < 768) {
+        const isMenuTabActive = document.getElementById('view-menu').classList.contains('active');
+        if (cart.length > 0 && isMenuTabActive) {
+          document.getElementById('floating-cart').style.display = 'flex';
+        } else {
+          document.getElementById('floating-cart').style.display = 'none';
+        }
       }
     }
 
@@ -496,6 +515,14 @@
       link.click();
       document.body.removeChild(link);
     };
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768) {
+        document.getElementById('floating-cart').style.display = 'none';
+      } else {
+        renderCart();
+      }
+    });
 
     initMenu();
   </script>
