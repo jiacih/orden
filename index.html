@@ -26,7 +26,7 @@
     .pos-view { display: none; }
     .pos-view.active { display: block; }
 
-    .category-title { font-size: 18px; font-weight: bold; margin: 12px 0 8px 0; padding-bottom: 4px; border-bottom: 2px solid #ddd; color: #333; }
+    .category-title { font-size: 18px; font-weight: bold; margin: 15px 0 8px 0; padding-bottom: 4px; border-bottom: 2px solid #ddd; color: #333; }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     
     .item-btn { padding: 8px 4px; font-size: 14px; font-weight: bold; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center; word-break: break-all; white-space: pre-line; min-height: 60px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; line-height: 1.2; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -172,45 +172,48 @@
       return name;
     }
 
-    // 依據 0115菜單.xlsx 全品項更新[cite: 1]
+    // 0115菜單.xlsx 全品項 67 項完整設定[cite: 1]
     const rawMenuData = [
       {
-        category: "🍢 鮮品類 / 火鍋料 / 肉類",
+        category: "🥩 肉片類",
+        type: "meat",
+        items: [
+          { name: "牛肉片", price: 40 },
+          { name: "豬肉片", price: 40 },
+          { name: "羊肉片", price: 40 },
+          { name: "雞肉片", price: 40 }
+        ]
+      },
+      {
+        category: "🍢 鮮品類 / 火鍋料 / 豆製品",
         type: "normal",
         items: [
           { name: "嘴邊肉", price: 50 }, { name: "大腸", price: 50 },
           { name: "高麗菜捲", price: 45 },
-          { name: "鮮魷魚", price: 40 }, { name: "豬腳筋", price: 40 }, { name: "豬頭皮", price: 40 },
-          { name: "牛肉片", price: 40 }, { name: "豬肉片", price: 40 }, { name: "羊肉片", price: 40 },
-          { name: "雞肉片", price: 40 }, { name: "豬耳朵", price: 40 },
+          { name: "鮮魷魚", price: 40 }, { name: "豬腳筋", price: 40 }, { name: "豬頭皮", price: 40 }, { name: "豬耳朵", price: 40 },
           { name: "花枝丸", price: 35 }, { name: "魚豆腐", price: 35 }, { name: "原味貢丸", price: 35 },
-          { name: "德式香腸", price: 35 }, { name: "起司魚豆腐", price: 35 }, { name: "香菇貢丸", price: 35 },
-          { name: "花枝片", price: 35 },
-          { name: "水晶餃", price: 30 }, { name: "鱈魚片板", price: 30 }, { name: "大豆皮", price: 30 },
-          { name: "小豆皮", price: 30 }, { name: "大黑豆干", price: 30 },
+          { name: "德式香腸", price: 35 }, { name: "起司魚豆腐", price: 35 }, { name: "香菇貢丸", price: 35 }, { name: "花枝片", price: 35 },
+          { name: "水晶餃", price: 30 }, { name: "鱈魚片板", price: 30 }, { name: "大豆皮", price: 30 }, { name: "小豆皮", price: 30 }, { name: "大黑豆干", price: 30 },
           { name: "麻糬燒\n(花生)", price: 25 }, { name: "麻糬燒\n(芝麻)", price: 25 }, { name: "麻糬燒\n(起司)", price: 25 },
-          { name: "甜不辣", price: 25 }, { name: "蛋餃", price: 25 }, { name: "貢丸", price: 25 },
-          { name: "鴨血", price: 25 }, { name: "花干", price: 25 }, { name: "蛋白", price: 25 },
-          { name: "芋粿巧", price: 25 }, { name: "龍蝦沙拉", price: 25 }, { name: "魚蛋包", price: 25 },
-          { name: "起司燒", price: 25 },
-          { name: "鳥蛋", price: 20 }, { name: "龍蝦條", price: 20 }, { name: "魚餃", price: 20 },
-          { name: "燕餃", price: 20 }, { name: "黃金蛋", price: 20 }, { name: "魚卵捲", price: 20 },
-          { name: "竹輪", price: 20 }, { name: "蝦球", price: 20 }, { name: "蟹肉棒", price: 20 },
-          { name: "百頁豆腐", price: 20 }, { name: "九層花枝", price: 20 }, { name: "鑫鑫腸", price: 20 },
-          { name: "豬皮", price: 20 }, { name: "鴨肉丸", price: 20 }, { name: "豬血糕", price: 20 },
-          { name: "蒟蒻片", price: 20 }, { name: "炸豆包", price: 20 }, { name: "鱈魚丸", price: 20 },
-          { name: "素腰花", price: 20 },
+          { name: "甜不辣", price: 25 }, { name: "蛋餃", price: 25 }, { name: "貢丸", price: 25 }, { name: "鴨血", price: 25 },
+          { name: "花干", price: 25 }, { name: "蛋白", price: 25 }, { name: "芋粿巧", price: 25 }, { name: "龍蝦沙拉", price: 25 },
+          { name: "魚蛋包", price: 25 }, { name: "起司燒", price: 25 },
+          { name: "鳥蛋", price: 20 }, { name: "龍蝦條", price: 20 }, { name: "魚餃", price: 20 }, { name: "燕餃", price: 20 },
+          { name: "黃金蛋", price: 20 }, { name: "魚卵捲", price: 20 }, { name: "竹輪", price: 20 }, { name: "蝦球", price: 20 },
+          { name: "蟹肉棒", price: 20 }, { name: "百頁豆腐", price: 20 }, { name: "九層花枝", price: 20 }, { name: "鑫鑫腸", price: 20 },
+          { name: "豬皮", price: 20 }, { name: "鴨肉丸", price: 20 }, { name: "豬血糕", price: 20 }, { name: "蒟蒻片", price: 20 },
+          { name: "炸豆包", price: 20 }, { name: "鱈魚丸", price: 20 }, { name: "素腰花", price: 20 },
           { name: "黑輪", price: 15 },
-          { name: "芋簽條", price: 10 }, { name: "白蘿蔔", price: 10 }, { name: "紅蘿蔔", price: 10 },
-          { name: "嫩油豆腐", price: 10 }, { name: "雞肝", price: 10 }, { name: "凍豆腐", price: 10 },
-          { name: "三角豆腐", price: 10 }, { name: "海帶", price: 10 }, { name: "小魚片板", price: 10 }
+          { name: "芋簽條", price: 10 }, { name: "白蘿蔔", price: 10 }, { name: "紅蘿蔔", price: 10 }, { name: "嫩油豆腐", price: 10 },
+          { name: "雞肝", price: 10 }, { name: "凍豆腐", price: 10 }, { name: "三角豆腐", price: 10 }, { name: "海帶", price: 10 },
+          { name: "小魚片板", price: 10 }
         ]
       },
       {
         category: "🥬 蔬菜類區",
         type: "veg",
         items: [
-          { name: "蒟蒻絲\n1盒", price: 40 },
+          { name: "蒟蒻絲1盒", price: 40 },
           { name: "金針菇", price: 30 }, { name: "高麗菜", price: 30 }, { name: "花椰菜", price: 30 },
           { name: "大陸妹", price: 30 }, { name: "A菜", price: 30 }, { name: "地瓜葉", price: 30 },
           { name: "空心菜", price: 30 }, { name: "娃娃菜", price: 30 }, { name: "青江菜", price: 30 },
@@ -343,7 +346,6 @@
         tbody.appendChild(tr);
       });
 
-      // 依菜單規則：未滿 50 元需收 5 元包材費[cite: 1]
       let packFee = (subtotal > 0 && subtotal < 50) ? 5 : 0;
       let total = subtotal + packFee;
 
@@ -387,8 +389,6 @@
       let subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
       let packFee = (subtotal < 50) ? 5 : 0;
       let total = subtotal + packFee;
-      
-      // 依菜單規則：滿 60 元升級紙碗盛裝[cite: 1]
       let containerType = (total >= 60) ? "紙碗" : "塑膠袋";
 
       const now = new Date();
@@ -500,7 +500,6 @@
         csvContent += '"#' + (idx + 1) + '","' + order.timestamp + '","' + itemsSummary + '","' + order.total + '","' + order.container + '","' + statusText + '"\n';
       });
 
-      // 新增最後合計列
       csvContent += '"合計","共 ' + grandTotalCount + ' 筆訂單","--","' + grandTotalRevenue + '","--","--"\n';
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
