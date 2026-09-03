@@ -6,34 +6,37 @@
   <title>呷百二滷味店 - POS系統</title>
   <style>
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; padding: 0; background-color: #f4f4f9; padding-bottom: 70px; }
+    body { margin: 0; padding: 0; background-color: #f4f4f9; padding-bottom: 75px; }
 
     #lock-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #2c3e50; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: white; padding: 20px; }
     #lock-screen input { font-size: 20px; padding: 12px; text-align: center; width: 80%; max-width: 280px; margin: 15px 0; border-radius: 8px; border: none; }
     #lock-screen button { font-size: 18px; padding: 12px 30px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 80%; max-width: 280px; }
 
+    /* 上方主導覽列 */
     .nav-bar { display: flex; background: #333; color: white; position: sticky; top: 0; z-index: 100; }
     .nav-btn { flex: 1; padding: 12px 5px; text-align: center; font-size: 15px; cursor: pointer; border: none; background: transparent; color: white; font-weight: bold; }
     .nav-btn.active { background: #e74c3c; }
 
-    .sub-nav { display: flex; background: #e0e0e0; border-bottom: 1px solid #ccc; }
-    .sub-btn { flex: 1; padding: 10px; text-align: center; font-size: 15px; font-weight: bold; border: none; background: transparent; cursor: pointer; color: #555; }
+    /* 手機專用副導覽列 (菜單 / 購物車) */
+    .sub-nav { display: flex; background: #ffffff; border-bottom: 2px solid #e0e0e0; position: sticky; top: 43px; z-index: 99; }
+    .sub-btn { flex: 1; padding: 12px 5px; text-align: center; font-size: 15px; font-weight: bold; border: none; background: #f8f9fa; cursor: pointer; color: #666; }
     .sub-btn.active { background: #ffffff; color: #e74c3c; border-bottom: 3px solid #e74c3c; }
 
     .page { display: none; padding: 10px; }
     .page.active { display: block; }
 
+    /* 手機版預設單欄預覽切換 */
     .pos-view { display: none; }
     .pos-view.active { display: block; }
 
-    .category-title { font-size: 18px; font-weight: bold; margin: 12px 0 8px 0; padding-bottom: 4px; border-bottom: 2px solid #ddd; color: #333; }
+    .category-title { font-size: 17px; font-weight: bold; margin: 14px 0 8px 0; padding-bottom: 4px; border-bottom: 2px solid #e74c3c; color: #2c3e50; }
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
     
-    .item-btn { padding: 8px 4px; font-size: 14px; font-weight: bold; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center; word-break: break-all; white-space: pre-line; min-height: 60px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; line-height: 1.2; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .item-btn { padding: 8px 4px; font-size: 13px; font-weight: bold; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-align: center; word-break: break-all; white-space: pre-line; min-height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #ffffff; line-height: 1.25; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
     /* 肉類-紅底顯示 */
-    .item-btn.meat { background-color: #ffdddd; border-color: #ff9999; color: #990000; }
+    .item-btn.meat { background-color: #ffe6e6; border-color: #ff9999; color: #a00000; }
     /* 蔬菜類-綠底顯示 */
-    .item-btn.veg { background-color: #ddffdd; border-color: #99ff99; color: #006600; }
+    .item-btn.veg { background-color: #e6ffe6; border-color: #99ff99; color: #006600; }
 
     .cart-section { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 8px; }
@@ -48,14 +51,15 @@
     .flavor-section { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc; }
     .flavor-title { font-size: 15px; font-weight: bold; margin-bottom: 8px; color: #333; }
     .flavor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .flavor-btn { padding: 6px 2px; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; background: #f8f9fa; border-radius: 5px; cursor: pointer; text-align: center; }
+    .flavor-btn { padding: 8px 2px; font-size: 13px; font-weight: bold; border: 1px solid #bdc3c7; background: #f8f9fa; border-radius: 6px; cursor: pointer; text-align: center; }
     .flavor-btn.selected { background: #e74c3c; color: white; border-color: #c0392b; }
 
     .cart-total { font-size: 20px; font-weight: bold; color: #e74c3c; margin: 15px 0; text-align: right; }
     .pack-fee { color: #e67e22; font-size: 13px; font-weight: normal; }
     .submit-btn { width: 100%; padding: 14px; background: #27ae60; color: white; border: none; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
 
-    .floating-cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #2c3e50; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 90; box-shadow: 0 -2px 10px rgba(0,0,0,0.15); cursor: pointer; }
+    /* 手機版底部浮動條 */
+    .floating-cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #2c3e50; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 900; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); cursor: pointer; }
     .floating-cart-bar .cart-info { font-size: 16px; font-weight: bold; }
     .floating-cart-bar .go-cart-btn { background: #e74c3c; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; }
 
@@ -63,7 +67,7 @@
     .kds-card { background: white; border-radius: 8px; border-top: 6px solid #3498db; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .kds-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     .kds-order-num { color: #e74c3c; font-size: 20px; font-weight: bold; }
-    .kds-item { font-size: 18px; font-weight: bold; margin: 4px 0; white-space: pre-line; line-height: 1.3; color: #2c3e50; }
+    .kds-item { font-size: 17px; font-weight: bold; margin: 4px 0; white-space: pre-line; line-height: 1.3; color: #2c3e50; }
     .kds-flavors { font-size: 15px; color: #d35400; font-weight: bold; margin: 6px 0; background: #fef5e7; padding: 4px 8px; border-radius: 4px; }
     .kds-container-tag { display: inline-block; padding: 3px 8px; background: #eee; border-radius: 4px; font-size: 14px; margin-top: 6px; font-weight: bold; }
     .kds-actions { display: flex; gap: 8px; margin-top: 12px; }
@@ -73,9 +77,10 @@
     .stat-card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .export-btn { width: 100%; padding: 12px; background: #2980b9; color: white; border: none; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
 
+    /* 🖥️ 電腦版 (寬度 >= 768px) 響應式設定 */
     @media (min-width: 768px) {
       body { padding-bottom: 0; }
-      .sub-nav { display: none; }
+      .sub-nav { display: none !important; }
       .floating-cart-bar { display: none !important; }
       .pos-wrapper { display: flex; gap: 20px; }
       .pos-view { display: block !important; }
@@ -101,6 +106,7 @@
   </div>
 
   <div id="page-pos" class="page active" style="padding: 0;">
+    <!-- 手機版切換頁籤 -->
     <div class="sub-nav">
       <button class="sub-btn active" id="tab-menu-btn">📋 點餐菜單</button>
       <button class="sub-btn" id="tab-cart-btn">🛒 購物車 (<span id="cart-count">0</span>)</button>
@@ -139,6 +145,7 @@
       </div>
     </div>
 
+    <!-- 手機版底部浮動捷徑 -->
     <div class="floating-cart-bar" id="floating-cart" style="display: none;">
       <div class="cart-info">共 <span id="float-qty">0</span> 件，小計 $<span id="float-total">0</span></div>
       <div class="go-cart-btn">檢視購物車 ➔</div>
@@ -177,7 +184,7 @@
     const db = getDatabase(app);
     const ordersRef = ref(db, 'orders');
 
-    // 自動換行處理邏輯 (括弧換行 / 4字以上換行)
+    // 自動換行排版邏輯
     function formatItemName(name) {
       if (name.indexOf('麻糬燒') !== -1) {
         return name.replace('(', '\n(');
@@ -193,7 +200,6 @@
       return name;
     }
 
-    // 完全對照 0115菜單.xlsx 資料
     const rawMenuData = [
       {
         category: "🍢 火鍋料區",
@@ -332,7 +338,6 @@
         container.appendChild(grid);
       });
 
-      // 初始化口味按鈕
       const flavorContainer = document.getElementById('flavor-container');
       flavorContainer.innerHTML = '';
       flavorOptions.forEach(flavor => {
@@ -397,7 +402,6 @@
         tbody.appendChild(tr);
       });
 
-      // 未滿50元收5元包材費，滿60元使用紙碗
       let packFee = (subtotal > 0 && subtotal < 50) ? 5 : 0;
       let total = subtotal + packFee;
 
